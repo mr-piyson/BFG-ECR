@@ -1,12 +1,12 @@
-import { Header } from '@/components/header'
-import { Sidebar } from '@/components/sidebar'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import sql from '@/lib/db'
-import Link from 'next/link'
-import { StatusPieChart, ProjectBarChart } from '@/components/dashboard-charts'
+import { Header } from "@/components/header";
+import { Sidebar } from "@/components/sidebar";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import sql from "@/lib/db";
+import Link from "next/link";
+import { StatusPieChart, ProjectBarChart } from "@/components/dashboard-charts";
 
-export const revalidate = 60
+export const revalidate = 60;
 
 async function getDashboardStats() {
   try {
@@ -17,7 +17,7 @@ async function getDashboardStats() {
       FROM ecrs
       GROUP BY status
       ORDER BY count DESC
-    `
+    `;
 
     const projectStats = await sql`
       SELECT 
@@ -29,11 +29,11 @@ async function getDashboardStats() {
       GROUP BY p.id, p.code, p.name
       ORDER BY count DESC
       LIMIT 5
-    `
+    `;
 
-    const totalEcrs = await sql`SELECT COUNT(*) as count FROM ecrs`
-    const releasedEcrs = await sql`SELECT COUNT(*) as count FROM ecrs WHERE status = 'RELEASED'`
-    const onHoldEcrs = await sql`SELECT COUNT(*) as count FROM ecrs WHERE status = 'ON_HOLD'`
+    const totalEcrs = await sql`SELECT COUNT(*) as count FROM ecrs`;
+    const releasedEcrs = await sql`SELECT COUNT(*) as count FROM ecrs WHERE status = 'RELEASED'`;
+    const onHoldEcrs = await sql`SELECT COUNT(*) as count FROM ecrs WHERE status = 'ON_HOLD'`;
     const recentActivity = await sql`
       SELECT 
         sh.id,
@@ -49,18 +49,18 @@ async function getDashboardStats() {
       JOIN users u ON sh.acted_by_user_id = u.id
       ORDER BY sh.created_at DESC
       LIMIT 10
-    `
+    `;
 
     return {
-      totalEcrs: totalEcrs[0]?.count || 0,
-      releasedEcrs: releasedEcrs[0]?.count || 0,
-      onHoldEcrs: onHoldEcrs[0]?.count || 0,
-      ecrStats: ecrStats || [],
-      projectStats: projectStats || [],
-      recentActivity: recentActivity || [],
-    }
+      totalEcrs: Number(totalEcrs[0]?.count) || 0,
+      releasedEcrs: Number(releasedEcrs[0]?.count) || 0,
+      onHoldEcrs: Number(onHoldEcrs[0]?.count) || 0,
+      ecrStats: Number(ecrStats) || [],
+      projectStats: Number(projectStats) || [],
+      recentActivity: Number(recentActivity) || [],
+    };
   } catch (error) {
-    console.error('Dashboard stats error:', error)
+    console.error("Dashboard stats error:", error);
     return {
       totalEcrs: 0,
       releasedEcrs: 0,
@@ -68,12 +68,12 @@ async function getDashboardStats() {
       ecrStats: [],
       projectStats: [],
       recentActivity: [],
-    }
+    };
   }
 }
 
 export default async function DashboardPage() {
-  const { totalEcrs, releasedEcrs, onHoldEcrs, ecrStats, projectStats, recentActivity } = await getDashboardStats()
+  const { totalEcrs, releasedEcrs, onHoldEcrs, ecrStats, projectStats, recentActivity } = await getDashboardStats();
 
   return (
     <div className="flex h-screen bg-background">
@@ -103,7 +103,7 @@ export default async function DashboardPage() {
               </Card>
               <Card className="p-6">
                 <p className="text-sm text-muted-foreground mb-2">In Progress</p>
-                <p className="text-3xl font-bold text-blue-600">{totalEcrs - releasedEcrs - onHoldEcrs}</p>
+                <p className="text-3xl font-bold text-blue-600">{Number(totalEcrs) - Number(releasedEcrs) - Number(onHoldEcrs)}</p>
               </Card>
             </div>
 
@@ -127,16 +127,16 @@ export default async function DashboardPage() {
                 {recentActivity.length === 0 ? (
                   <p className="text-sm text-muted-foreground py-4">No recent activity</p>
                 ) : (
-                  recentActivity.map((activity) => (
+                  recentActivity.map((activity: any) => (
                     <div key={activity.id} className="flex items-start justify-between border-b border-border pb-3 last:border-0">
                       <div className="space-y-1">
                         <p className="text-sm font-medium">ECR #{activity.ecr_number}</p>
                         <p className="text-xs text-muted-foreground">{activity.stage}</p>
-                        <p className="text-xs text-muted-foreground">{activity.user_name} moved to {activity.to_status}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {activity.user_name} moved to {activity.to_status}
+                        </p>
                       </div>
-                      <div className="text-xs text-muted-foreground">
-                        {new Date(activity.created_at).toLocaleDateString()}
-                      </div>
+                      <div className="text-xs text-muted-foreground">{new Date(activity.created_at).toLocaleDateString()}</div>
                     </div>
                   ))
                 )}
@@ -146,5 +146,5 @@ export default async function DashboardPage() {
         </main>
       </div>
     </div>
-  )
+  );
 }

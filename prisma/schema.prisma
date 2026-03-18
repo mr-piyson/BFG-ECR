@@ -1,0 +1,348 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ============================================================
+// ENUMS
+// ============================================================
+
+enum UserRole {
+  DESIGN_ENGINEER
+  COSTING_ENGINEER
+  PROJECT_ENGINEER
+  QUALITY_ENGINEER
+  ADMIN
+}
+
+enum ECRStatus {
+  DRAFT
+  PENDING_COSTING
+  UNDER_COSTING
+  PENDING_PROJECT_MANAGER
+  UNDER_PROJECT_MANAGER
+  PENDING_DESIGN_MEETING
+  UNDER_DESIGN_MEETING
+  PENDING_QUALITY_CHECK
+  UNDER_QUALITY_CHECK
+  RELEASED
+  RETURNED_TO_DESIGN
+  RETURNED_TO_COSTING
+  RETURNED_TO_PROJECT_MANAGER
+  ON_HOLD
+  CANCELLED
+}
+
+enum ECRSource {
+  CUSTOMER
+  INTERNAL
+}
+
+enum ECRFlowStatus {
+  PROCEED
+  PENDING
+  RETURNED
+  SKIPPED
+  NOT_APPLICABLE
+}
+
+enum StageType {
+  DESIGN_ENGINEER_INITIAL
+  COSTING
+  PROJECT_MANAGER
+  DESIGN_ENGINEER_MEETING
+  QUALITY_FINAL_CHECK
+}
+
+// ============================================================
+// MODELS
+// ============================================================
+
+model User {
+  id         String   @id @default(dbgenerated("gen_random_uuid()::text"))
+  email      String   @unique
+  name       String
+  role       UserRole
+  department String?
+  avatarUrl  String?  @map("avatar_url")
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  projectAssignments ProjectAssignment[]
+  designedEcrs       Ecr[]               @relation("DesignEngineer")
+  managedEcrs        Ecr[]               @relation("ProjectEngineer")
+  stageHistories     StageHistory[]
+  meetingAttendees   MeetingAttendee[]
+  notifications      Notification[]
+
+  @@map("users")
+}
+
+model Project {
+  id          String   @id @default(dbgenerated("gen_random_uuid()::text"))
+  code        String   @unique
+  name        String
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  scopes      ProjectScope[]
+  assignments ProjectAssignment[]
+  ecrs        Ecr[]
+
+  @@map("projects")
+}
+
+model ProjectScope {
+  id          String   @id @default(dbgenerated("gen_random_uuid()::text"))
+  projectId   String   @map("project_id")
+  name        String
+  description String?
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  // Relations
+  project Project @relation(fields: [projectId], references: [id])
+  ecrs    Ecr[]
+
+  @@unique([projectId, name])
+  @@map("project_scopes")
+}
+
+model ProjectAssignment {
+  id         String   @id @default(dbgenerated("gen_random_uuid()::text"))
+  userId     String   @map("user_id")
+  projectId  String   @map("project_id")
+  role       UserRole
+  isPrimary  Boolean  @default(false) @map("is_primary")
+  assignedAt DateTime @default(now()) @map("assigned_at")
+
+  // Relations
+  user    User    @relation(fields: [userId], references: [id])
+  project Project @relation(fields: [projectId], references: [id])
+
+  @@unique([userId, projectId, role])
+  @@map("project_assignments")
+}
+
+model Ecr {
+  id                String    @id @default(dbgenerated("gen_random_uuid()::text"))
+  ecrNumber         Int       @unique @default(autoincrement()) @map("ecr_number")
+  projectId         String    @map("project_id")
+  scopeId           String?   @map("scope_id")
+  status            ECRStatus @default(DRAFT)
+  source            ECRSource @default(CUSTOMER)
+  currentStage      StageType @default(DESIGN_ENGINEER_INITIAL) @map("current_stage")
+  designEngineerId  String    @map("design_engineer_id")
+  projectEngineerId String?   @map("project_engineer_id")
+  ecrFlowLabel      String?   @map("ecr_flow_label")
+  isPdfGenerated    Boolean   @default(false) @map("is_pdf_generated")
+  createdAt         DateTime  @default(now()) @map("created_at")
+  updatedAt         DateTime  @updatedAt @map("updated_at")
+  releasedAt        DateTime? @map("released_at")
+
+  // Relations
+  project            Project             @relation(fields: [projectId], references: [id])
+  scope              ProjectScope?       @relation(fields: [scopeId], references: [id])
+  designEngineer     User                @relation("DesignEngineer", fields: [designEngineerId], references: [id])
+  projectEngineer    User?               @relation("ProjectEngineer", fields: [projectEngineerId], references: [id])
+  designInitialForm  DesignInitialForm?
+  costingForm        CostingForm?
+  projectManagerForm ProjectManagerForm?
+  designMeetingForm  DesignMeetingForm?
+  qualityCheckForm   QualityCheckForm?
+  stageHistories     StageHistory[]
+  attachments        Attachment[]
+  notifications      Notification[]
+
+  @@map("ecrs")
+}
+
+model DesignInitialForm {
+  id                     String        @id @default(dbgenerated("gen_random_uuid()::text"))
+  ecrId                  String        @unique @map("ecr_id")
+  customerCrNumber       String?       @map("customer_cr_number")
+  crReceivedOn           DateTime      @map("cr_received_on")
+  crBy                   String        @map("cr_by")
+  changeDescription      String        @map("change_description")
+  ecrSheetFilledOn       DateTime?     @map("ecr_sheet_filled_on")
+  transferredToCostingOn DateTime?     @map("transferred_to_costing_on")
+  flowStatus             ECRFlowStatus @default(PENDING) @map("flow_status")
+  isSkipCosting          Boolean       @default(false) @map("is_skip_costing")
+  isSkipProjectManager   Boolean       @default(false) @map("is_skip_project_manager")
+  isSkipQuality          Boolean       @default(false) @map("is_skip_quality")
+  submittedAt            DateTime?     @map("submitted_at")
+  updatedAt              DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  ecr Ecr @relation(fields: [ecrId], references: [id])
+
+  @@map("design_initial_forms")
+}
+
+model CostingForm {
+  id                  String        @id @default(dbgenerated("gen_random_uuid()::text"))
+  ecrId               String        @unique @map("ecr_id")
+  costingEngineerId   String?       @map("costing_engineer_id")
+  dateOfQuote         DateTime?     @map("date_of_quote")
+  offerToCustomerDate DateTime?     @map("offer_to_customer_date")
+  costDetails         String?       @map("cost_details")
+  hasNrcCost          Boolean       @default(false) @map("has_nrc_cost")
+  hasRcCost           Boolean       @default(false) @map("has_rc_cost")
+  nrcAmount           Decimal?      @map("nrc_amount") @db.Decimal(12, 2)
+  rcAmount            Decimal?      @map("rc_amount") @db.Decimal(12, 2)
+  currency            String        @default("USD")
+  flowStatus          ECRFlowStatus @default(PENDING) @map("flow_status")
+  remark              String?
+  processedOn         DateTime?     @map("processed_on")
+  submittedAt         DateTime?     @map("submitted_at")
+  updatedAt           DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  ecr Ecr @relation(fields: [ecrId], references: [id])
+
+  @@map("costing_forms")
+}
+
+model ProjectManagerForm {
+  id            String        @id @default(dbgenerated("gen_random_uuid()::text"))
+  ecrId         String        @unique @map("ecr_id")
+  poReceiptDate DateTime?     @map("po_receipt_date")
+  roa           String?
+  pmNotes       String?       @map("pm_notes")
+  flowStatus    ECRFlowStatus @default(PENDING) @map("flow_status")
+  remark        String?
+  processedOn   DateTime?     @map("processed_on")
+  submittedAt   DateTime?     @map("submitted_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  ecr Ecr @relation(fields: [ecrId], references: [id])
+
+  @@map("project_manager_forms")
+}
+
+model DesignMeetingForm {
+  id                String        @id @default(dbgenerated("gen_random_uuid()::text"))
+  ecrId             String        @unique @map("ecr_id")
+  meetingDate       DateTime?     @map("meeting_date")
+  epicorReleaseDate DateTime?     @map("epicor_release_date")
+  ernReleaseDate    DateTime?     @map("ern_release_date")
+  meetingNotes      String?       @map("meeting_notes")
+  isNotApplicable   Boolean       @default(false) @map("is_not_applicable")
+  flowStatus        ECRFlowStatus @default(PENDING) @map("flow_status")
+  remark            String?
+  processedOn       DateTime?     @map("processed_on")
+  submittedAt       DateTime?     @map("submitted_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  ecr       Ecr               @relation(fields: [ecrId], references: [id])
+  attendees MeetingAttendee[]
+
+  @@map("design_meeting_forms")
+}
+
+model MeetingAttendee {
+  id            String  @id @default(dbgenerated("gen_random_uuid()::text"))
+  meetingFormId String  @map("meeting_form_id")
+  userId        String? @map("user_id")
+  name          String
+  email         String?
+  isExternal    Boolean @default(false) @map("is_external")
+
+  // Relations
+  meetingForm DesignMeetingForm @relation(fields: [meetingFormId], references: [id])
+  user        User?             @relation(fields: [userId], references: [id])
+
+  @@map("meeting_attendees")
+}
+
+model QualityCheckForm {
+  id                 String        @id @default(dbgenerated("gen_random_uuid()::text"))
+  ecrId              String        @unique @map("ecr_id")
+  qualityEngineerId  String?       @map("quality_engineer_id")
+  verificationResult String?       @map("verification_result")
+  verifiedInTrainSet String?       @map("verified_in_train_set")
+  verificationDate   DateTime?     @map("verification_date")
+  findings           String?
+  flowStatus         ECRFlowStatus @default(PENDING) @map("flow_status")
+  remark             String?
+  processedOn        DateTime?     @map("processed_on")
+  submittedAt        DateTime?     @map("submitted_at")
+  updatedAt          DateTime      @updatedAt @map("updated_at")
+
+  // Relations
+  ecr Ecr @relation(fields: [ecrId], references: [id])
+
+  @@map("quality_check_forms")
+}
+
+model StageHistory {
+  id              String        @id @default(dbgenerated("gen_random_uuid()::text"))
+  ecrId           String        @map("ecr_id")
+  stage           StageType
+  fromStatus      ECRStatus     @map("from_status")
+  toStatus        ECRStatus     @map("to_status")
+  flowStatus      ECRFlowStatus @map("flow_status")
+  actedByUserId   String        @map("acted_by_user_id")
+  remark          String?
+  returnedToStage StageType?    @map("returned_to_stage")
+  isSkip          Boolean       @default(false) @map("is_skip")
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  // Relations
+  ecr         Ecr  @relation(fields: [ecrId], references: [id])
+  actedByUser User @relation(fields: [actedByUserId], references: [id])
+
+  @@index([ecrId])
+  @@index([actedByUserId])
+  @@map("stage_histories")
+}
+
+model Attachment {
+  id         String     @id @default(dbgenerated("gen_random_uuid()::text"))
+  ecrId      String     @map("ecr_id")
+  fileName   String     @map("file_name")
+  fileUrl    String     @map("file_url")
+  fileSize   Int?       @map("file_size")
+  mimeType   String?    @map("mime_type")
+  stage      StageType?
+  uploadedBy String     @map("uploaded_by")
+  uploadedAt DateTime   @default(now()) @map("uploaded_at")
+
+  // Relations
+  ecr Ecr @relation(fields: [ecrId], references: [id])
+
+  @@map("attachments")
+}
+
+model Notification {
+  id        String   @id @default(dbgenerated("gen_random_uuid()::text"))
+  ecrId     String?  @map("ecr_id")
+  userId    String   @map("user_id")
+  title     String
+  message   String
+  type      String
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  // Relations
+  ecr  Ecr? @relation(fields: [ecrId], references: [id])
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId, isRead])
+  @@map("notifications")
+}
