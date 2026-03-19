@@ -1,14 +1,14 @@
-import { NextResponse } from 'next/server'
-import sql from '@/lib/db'
+import { NextResponse } from "next/server";
+import sql, { prisma } from "@/lib/db";
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url)
-    const projectId = searchParams.get('project')
-    const status = searchParams.get('status')
-    const search = searchParams.get('search')
-    const limit = parseInt(searchParams.get('limit') || '50')
-    const offset = parseInt(searchParams.get('offset') || '0')
+    const { searchParams } = new URL(request.url);
+    const projectId = searchParams.get("project");
+    const status = searchParams.get("status");
+    const search = searchParams.get("search");
+    const limit = parseInt(searchParams.get("limit") || "50");
+    const offset = parseInt(searchParams.get("offset") || "0");
 
     const ecrs = await sql`
       SELECT
@@ -34,15 +34,15 @@ export async function GET(request: Request) {
         AND (${status}::text IS NULL OR e.status = ${status}::"ECRStatus")
         AND (
           ${search}::text IS NULL
-          OR e.ecr_number::text ILIKE ${'%' + (search || '') + '%'}
-          OR p.code ILIKE ${'%' + (search || '') + '%'}
-          OR p.name ILIKE ${'%' + (search || '') + '%'}
-          OR dif.customer_cr_number ILIKE ${'%' + (search || '') + '%'}
-          OR dif.change_description ILIKE ${'%' + (search || '') + '%'}
+          OR e.ecr_number::text ILIKE ${"%" + (search || "") + "%"}
+          OR p.code ILIKE ${"%" + (search || "") + "%"}
+          OR p.name ILIKE ${"%" + (search || "") + "%"}
+          OR dif.customer_cr_number ILIKE ${"%" + (search || "") + "%"}
+          OR dif.change_description ILIKE ${"%" + (search || "") + "%"}
         )
       ORDER BY e.updated_at DESC
       LIMIT ${limit} OFFSET ${offset}
-    `
+    `;
 
     const [{ total }] = await sql`
       SELECT COUNT(*)::int AS total
@@ -54,69 +54,65 @@ export async function GET(request: Request) {
         AND (${status}::text IS NULL OR e.status = ${status}::"ECRStatus")
         AND (
           ${search}::text IS NULL
-          OR e.ecr_number::text ILIKE ${'%' + (search || '') + '%'}
-          OR p.code ILIKE ${'%' + (search || '') + '%'}
-          OR p.name ILIKE ${'%' + (search || '') + '%'}
-          OR dif.customer_cr_number ILIKE ${'%' + (search || '') + '%'}
-          OR dif.change_description ILIKE ${'%' + (search || '') + '%'}
+          OR e.ecr_number::text ILIKE ${"%" + (search || "") + "%"}
+          OR p.code ILIKE ${"%" + (search || "") + "%"}
+          OR p.name ILIKE ${"%" + (search || "") + "%"}
+          OR dif.customer_cr_number ILIKE ${"%" + (search || "") + "%"}
+          OR dif.change_description ILIKE ${"%" + (search || "") + "%"}
         )
-    `
+    `;
 
-    return NextResponse.json({ ecrs, total })
+    return NextResponse.json({ ecrs, total });
   } catch (error) {
-    console.error('[ECR List API]', error)
-    return NextResponse.json({ error: 'Failed to load ECRs' }, { status: 500 })
+    console.error("[ECR List API]", error);
+    return NextResponse.json({ error: "Failed to load ECRs" }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json()
-    const {
-      project_id,
-      scope_id,
-      source = 'CUSTOMER',
-      design_engineer_id,
-      project_engineer_id,
-      customer_cr_number,
-      cr_received_on,
-      cr_by,
-      change_description,
-      is_skip_costing = false,
-      is_skip_project_manager = false,
-      is_skip_quality = false,
-    } = body
+    const body = await request.json();
+    const { project_id, scope_id, source = "CUSTOMER", design_engineer_id, project_engineer_id, customer_cr_number, cr_received_on, cr_by, change_description, is_skip_costing = false, is_skip_project_manager = false, is_skip_quality = false } = body;
 
+    // 1. Validation
     if (!project_id || !design_engineer_id || !cr_received_on || !cr_by || !change_description) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    // Create ECR
-    const [ecr] = await sql`
-      INSERT INTO ecrs (project_id, scope_id, source, design_engineer_id, project_engineer_id, status, current_stage)
-      VALUES (
-        ${project_id}, ${scope_id || null}, ${source}::"ECRSource",
-        ${design_engineer_id}, ${project_engineer_id || null},
-        'DRAFT'::"ECRStatus", 'DESIGN_ENGINEER_INITIAL'::"StageType"
-      )
-      RETURNING *
-    `
+    // 2. Create ECR and Form in one transaction
+    const ecr = await prisma.ecr.create({
+      data: {
+        projectId: project_id,
+        scopeId: scope_id || null,
+        source: source, // Enums match: CUSTOMER | INTERNAL
+        status: "DRAFT",
+        currentStage: "DESIGN_ENGINEER_INITIAL",
+        designEngineerId: design_engineer_id,
+        projectEngineerId: project_engineer_id || null,
 
-    // Create design initial form
-    await sql`
-      INSERT INTO design_initial_forms (
-        ecr_id, customer_cr_number, cr_received_on, cr_by, change_description,
-        is_skip_costing, is_skip_project_manager, is_skip_quality, flow_status
-      )
-      VALUES (
-        ${ecr.id}, ${customer_cr_number || null}, ${cr_received_on}, ${cr_by}, ${change_description},
-        ${is_skip_costing}, ${is_skip_project_manager}, ${is_skip_quality}, 'PENDING'::"ECRFlowStatus"
-      )
-    `
+        // Relation name in schema is 'designInitialForm'
+        designInitialForm: {
+          create: {
+            customerCrNumber: customer_cr_number || null,
+            crReceivedOn: new Date(cr_received_on),
+            crBy: cr_by,
+            changeDescription: change_description,
+            isSkipCosting: is_skip_costing,
+            isSkipProjectManager: is_skip_project_manager,
+            isSkipQuality: is_skip_quality,
+            flowStatus: "PENDING",
+          },
+        },
+      },
+      // Including the form in the return object to match your previous RETURNING * logic
+      include: {
+        designInitialForm: true,
+      },
+    });
 
-    return NextResponse.json({ ecr }, { status: 201 })
+    return NextResponse.json({ ecr }, { status: 201 });
   } catch (error) {
-    console.error('[ECR Create API]', error)
-    return NextResponse.json({ error: 'Failed to create ECR' }, { status: 500 })
+    console.error("[ECR Create API]", error);
+    return NextResponse.json({ error: "Failed to create ECR" }, { status: 500 });
   }
 }

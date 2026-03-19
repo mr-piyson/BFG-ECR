@@ -1,44 +1,44 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Header } from '@/components/header'
-import { Sidebar } from '@/components/sidebar'
-import { Card } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { useRouter } from 'next/navigation'
-import { toast } from 'sonner'
+import { useState } from "react";
+import { Header } from "@/components/header";
+import { Sidebar } from "@/components/sidebar";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 
 export default function PMFormPage({ params }: { params: { id: string } }) {
-  const router = useRouter()
-  const [loading, setLoading] = useState(false)
+  const router = useRouter();
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
-    po_receipt_date: '',
-    roa: '',
-    pm_notes: '',
-  })
+    po_receipt_date: "",
+    roa: "",
+    pm_notes: "",
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
+    e.preventDefault();
+    setLoading(true);
 
     try {
       const res = await fetch(`/api/ecrs/${params.id}/forms/pm`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
-      })
+      });
 
-      if (!res.ok) throw new Error('Failed to submit form')
+      if (!res.ok) toast.error("Failed to submit form");
 
-      toast.success('Project Manager Form submitted successfully')
-      router.push(`/ecrs/${params.id}`)
+      toast.success("Project Manager Form submitted successfully");
+      router.push(`/ecrs/${params.id}`);
     } catch (error) {
-      console.error('Form submission error:', error)
-      toast.error('Failed to submit form')
+      console.error("Form submission error:", error);
+      toast.error("Failed to submit form");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="flex h-screen bg-background">
@@ -56,45 +56,24 @@ export default function PMFormPage({ params }: { params: { id: string } }) {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium mb-2">PO Receipt Date</label>
-                  <input
-                    type="date"
-                    value={formData.po_receipt_date}
-                    onChange={(e) => setFormData({ ...formData, po_receipt_date: e.target.value })}
-                    className="w-full px-4 py-2 border border-border rounded-lg"
-                  />
+                  <input type="date" value={formData.po_receipt_date} onChange={(e) => setFormData({ ...formData, po_receipt_date: e.target.value })} className="w-full px-4 py-2 border border-border rounded-lg" />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-2">ROA (Resource Allocation)</label>
-                  <input
-                    type="text"
-                    value={formData.roa}
-                    onChange={(e) => setFormData({ ...formData, roa: e.target.value })}
-                    className="w-full px-4 py-2 border border-border rounded-lg"
-                    placeholder="e.g., 2 engineers for 3 weeks"
-                  />
+                  <input type="text" value={formData.roa} onChange={(e) => setFormData({ ...formData, roa: e.target.value })} className="w-full px-4 py-2 border border-border rounded-lg" placeholder="e.g., 2 engineers for 3 weeks" />
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-2">Project Manager Notes</label>
-                  <textarea
-                    value={formData.pm_notes}
-                    onChange={(e) => setFormData({ ...formData, pm_notes: e.target.value })}
-                    className="w-full px-4 py-2 border border-border rounded-lg min-h-32"
-                    placeholder="Timeline impact, risks, comments..."
-                  />
+                  <textarea value={formData.pm_notes} onChange={(e) => setFormData({ ...formData, pm_notes: e.target.value })} className="w-full px-4 py-2 border border-border rounded-lg min-h-32" placeholder="Timeline impact, risks, comments..." />
                 </div>
 
                 <div className="flex gap-4 pt-6">
                   <Button type="submit" disabled={loading}>
-                    {loading ? 'Submitting...' : 'Submit Review'}
+                    {loading ? "Submitting..." : "Submit Review"}
                   </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => router.back()}
-                    disabled={loading}
-                  >
+                  <Button type="button" variant="outline" onClick={() => router.back()} disabled={loading}>
                     Cancel
                   </Button>
                 </div>
@@ -104,5 +83,5 @@ export default function PMFormPage({ params }: { params: { id: string } }) {
         </main>
       </div>
     </div>
-  )
+  );
 }
