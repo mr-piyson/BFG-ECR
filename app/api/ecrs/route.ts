@@ -43,7 +43,8 @@ export async function GET(request: Request) {
       project_code: e.project.code,
       project_name: e.project.name,
       design_engineer_name: e.designEngineer.name,
-      change_description: e.designInitialForm?.changeDescription
+      change_description: e.designInitialForm?.changeDescription,
+      scope_name: e.scopes.map(s => (s as any).name).join(', ')
     }));
 
     return NextResponse.json({ ecrs: transformed, total: transformed.length });
@@ -56,7 +57,7 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { project_id, scope_ids, source = "CUSTOMER", design_engineer_id, project_engineer_id, customer_cr_number, cr_received_on, cr_by, change_description, is_skip_costing = false, is_skip_project_manager = false, is_skip_quality = false } = body;
+    const { project_id, scope_ids, source = "CUSTOMER", design_engineer_id, project_engineer_id, customer_cr_number, cr_received_on, cr_by, change_description, is_skip_costing = false, is_skip_project_manager = false, is_skip_meeting = false, is_skip_quality = false } = body;
 
     if (!project_id || !design_engineer_id || !cr_received_on || !cr_by || !change_description) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
@@ -81,6 +82,7 @@ export async function POST(request: Request) {
             changeDescription: change_description,
             isSkipCosting: is_skip_costing,
             isSkipProjectManager: is_skip_project_manager,
+            isSkipMeeting: is_skip_meeting,
             isSkipQuality: is_skip_quality,
             flowStatus: "PENDING",
           },

@@ -7,12 +7,23 @@ import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { StatusBadge, FlowStatusBadge } from '@/components/status-badge'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { AlertCircle, Clock, User } from 'lucide-react'
+import { AlertCircle, Clock, User, Building2, Search, Info, CheckCircle2 } from 'lucide-react'
+import { ECRFlowStatus, ECRStatus, StageType } from '@prisma/client'
 import { formatDate, STAGE_SHORT_LABELS, STAGE_ORDER } from '@/lib/ecr-helpers'
+import { cn } from '@/lib/utils'
 
 interface ECRDetailData {
   ecr: any
-  design_initial_form: any
+  design_initial_form: {
+    change_description: string;
+    cr_received_on: string;
+    cr_by: string;
+    flow_status: ECRFlowStatus;
+    is_skip_costing: boolean;
+    is_skip_project_manager: boolean;
+    is_skip_meeting: boolean;
+    is_skip_quality: boolean;
+  } | null;
   costing_form: any
   project_manager_form: any
   design_meeting_form: any
@@ -118,49 +129,80 @@ export default function ECRDetailPage({ params }: { params: Promise<{ id: string
               </div>
             </div>
 
-            {/* Stage Progress */}
-            <Card className="p-6">
-              <div className="space-y-4">
-                <div>
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="font-semibold">Workflow Progress</h3>
-                    <span className="text-sm text-muted-foreground">{Math.round(stageProgress)}%</span>
-                  </div>
-                  <div className="w-full bg-muted rounded-full h-2 overflow-hidden">
-                    <div
-                      className="bg-primary h-full transition-all"
-                      style={{ width: `${stageProgress}%` }}
-                    />
-                  </div>
-                </div>
+            {/* Modern Horizontal Workflow Stepper */}
+            <Card className="p-8 shadow-sm border-primary/5 bg-muted/20">
+              <div className="relative">
+                {/* Horizontal Track Background */}
+                <div className="absolute top-5 left-0 w-full h-0.5 bg-muted-foreground/10" />
+                
+                {/* Active Progress Track */}
+                <div 
+                  className="absolute top-5 left-0 h-0.5 bg-primary transition-all duration-700 ease-in-out shadow-[0_0_8px_rgba(var(--primary),0.5)]"
+                  style={{ width: `${Math.min(stageProgress, 100)}%` }}
+                />
 
-                {/* Stage Timeline */}
-                <div className="mt-6 space-y-2">
+                <div className="relative flex justify-between items-start gap-2">
                   {STAGE_ORDER.map((stage, index) => {
-                    const isActive = ecr.current_stage === stage
-                    const isPassed = index < currentStageIndex
+                    const isActive = ecr.current_stage === stage;
+                    const isPassed = index < currentStageIndex;
+                    
+                    const isSkipped = 
+                      (stage === 'COSTING' && data.design_initial_form?.is_skip_costing) ||
+                      (stage === 'PROJECT_MANAGER' && data.design_initial_form?.is_skip_project_manager) ||
+                      (stage === 'DESIGN_ENGINEER_MEETING' && data.design_initial_form?.is_skip_meeting) ||
+                      (stage === 'QUALITY_FINAL_CHECK' && data.design_initial_form?.is_skip_quality);
+
                     return (
-                      <div key={stage} className="flex items-center gap-3">
+                      <div key={stage} className="flex flex-col items-center flex-1 group">
+                        {/* Node */}
                         <div
-                          className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${
-                            isPassed
-                              ? 'bg-green-500 text-white'
-                              : isActive
-                                ? 'bg-primary text-primary-foreground'
-                                : 'bg-muted text-muted-foreground'
-                          }`}
+                          className={cn(
+                            "w-10 h-10 rounded-full flex items-center justify-center text-xs font-bold shrink-0 z-10 transition-all duration-300 border-4",
+                            isPassed && !isSkipped ? "bg-green-500 border-green-100 text-white shadow-lg" : 
+                            isSkipped ? "bg-slate-200 border-muted text-muted-foreground shadow-sm" :
+                            isActive ? "bg-primary border-primary/20 text-primary-foreground shadow-[0_0_15px_rgba(var(--primary),0.3)] scale-110" : 
+                            "bg-background border-muted text-muted-foreground"
+                          )}
                         >
-                          {index + 1}
+                          {isSkipped ? (
+                            <CheckCircle2 className="w-5 h-5 opacity-40" />
+                          ) : isPassed ? (
+                            <CheckCircle2 className="w-5 h-5" />
+                          ) : (
+                            <span>{index + 1}</span>
+                          )}
                         </div>
-                        <div className="flex-1">
-                          <p className={`font-medium ${isActive ? 'text-primary' : ''}`}>
+
+                        {/* Label & Status */}
+                        <div className="mt-4 text-center space-y-1">
+                          <p className={cn(
+                            "text-xs font-bold uppercase tracking-tighter transition-colors w-24 mx-auto leading-tight",
+                            isActive ? "text-primary" : "text-muted-foreground",
+                            isSkipped ? "opacity-40" : ""
+                          )}>
                             {STAGE_SHORT_LABELS[stage]}
                           </p>
+                          
+                          <div className="flex flex-col items-center">
+                            {isActive && (
+                              <span className="text-[10px] font-extrabold text-primary animate-pulse tracking-widest uppercase">
+                                Active
+                              </span>
+                            )}
+                            {isSkipped && (
+                              <span className="text-[9px] font-medium text-muted-foreground/60 italic">
+                                Skipped
+                              </span>
+                            )}
+                            {isPassed && !isSkipped && (
+                              <span className="text-[9px] font-medium text-green-600">
+                                Completed
+                              </span>
+                            )}
+                          </div>
                         </div>
-                        {isPassed && <span className="text-xs text-green-600">Completed</span>}
-                        {isActive && <span className="text-xs text-primary">In Progress</span>}
                       </div>
-                    )
+                    );
                   })}
                 </div>
               </div>
@@ -182,17 +224,19 @@ export default function ECRDetailPage({ params }: { params: Promise<{ id: string
                 <Card className="p-6 space-y-4">
                   <div>
                     <h3 className="font-semibold mb-2">ECR Information</h3>
-                    <div className="grid grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <p className="text-muted-foreground">Project</p>
-                        <p className="font-medium">{ecr.project?.name} ({ecr.project?.code})</p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-6 text-sm">
+                      <div className="space-y-1">
+                        <p className="text-muted-foreground flex items-center gap-2"><Building2 className="w-3 h-3" /> Project</p>
+                        <p className="font-semibold text-base">{ecr.project?.name}</p>
+                        <p className="text-xs font-mono bg-muted px-1.5 py-0.5 rounded w-fit">{ecr.project?.code}</p>
                       </div>
-                      <div>
-                        <p className="text-muted-foreground">Scopes</p>
-                        <div className="flex flex-wrap gap-1 mt-1">
+                      
+                      <div className="space-y-1">
+                        <p className="text-muted-foreground flex items-center gap-2"><Search className="w-3 h-3" /> Scopes</p>
+                        <div className="flex flex-wrap gap-1.5 mt-1">
                           {ecr.scopes && ecr.scopes.length > 0 ? (
                             ecr.scopes.map((s: any) => (
-                              <span key={s.id} className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded border border-primary/20">
+                              <span key={s.id} className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded-full border border-primary/20 shadow-sm">
                                 {s.name}
                               </span>
                             ))
@@ -201,15 +245,43 @@ export default function ECRDetailPage({ params }: { params: Promise<{ id: string
                           )}
                         </div>
                       </div>
-                      <div>
-                        <p className="text-muted-foreground">Source</p>
-                        <p className="font-medium">{ecr.source}</p>
+
+                      <div className="space-y-1">
+                        <p className="text-muted-foreground flex items-center gap-2"><Info className="w-3 h-3" /> Source</p>
+                        <p className="font-semibold text-base flex items-center gap-2">
+                          {ecr.source === 'CUSTOMER' ? <User className="w-4 h-4 text-blue-500" /> : <Building2 className="w-4 h-4 text-orange-500" />}
+                          {ecr.source}
+                        </p>
                       </div>
-                      <div>
-                        <p className="text-muted-foreground">Current Stage</p>
-                        <p className="font-medium">{STAGE_SHORT_LABELS[ecr.current_stage]}</p>
+
+                      <div className="space-y-1">
+                        <p className="text-muted-foreground">CR Requested By</p>
+                        <p className="font-medium">{data.design_initial_form?.cr_by || '—'}</p>
                       </div>
-                      <div>
+
+                      <div className="space-y-1">
+                        <p className="text-muted-foreground">Design Engineer</p>
+                        <div className="font-medium flex items-center gap-2">
+                          <div className="w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-[10px] font-bold text-primary">
+                            {ecr.design_engineer_name?.split(' ').map((n: string) => n[0]).join('')}
+                          </div>
+                          {ecr.design_engineer_name}
+                        </div>
+                      </div>
+
+                      {ecr.project_engineer_name && (
+                        <div className="space-y-1">
+                          <p className="text-muted-foreground">Project Engineer</p>
+                          <div className="font-medium flex items-center gap-2">
+                            <div className="w-6 h-6 rounded-full bg-orange-100 flex items-center justify-center text-[10px] font-bold text-orange-600">
+                              {ecr.project_engineer_name?.split(' ').map((n: string) => n[0]).join('')}
+                            </div>
+                            {ecr.project_engineer_name}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="space-y-1">
                         <p className="text-muted-foreground">Status</p>
                         <StatusBadge status={ecr.status} className="mt-1" />
                       </div>
@@ -336,7 +408,7 @@ export default function ECRDetailPage({ params }: { params: Promise<{ id: string
                       {data.stage_histories.map((history: any) => (
                         <div key={history.id} className="border-l-2 border-primary pl-4 py-2 text-sm">
                           <div className="flex items-center justify-between">
-                            <p className="font-medium">{STAGE_SHORT_LABELS[history.stage]}</p>
+                            <p className="font-medium">{STAGE_SHORT_LABELS[history.stage as keyof typeof STAGE_SHORT_LABELS]}</p>
                             <span className="text-xs text-muted-foreground">{formatDate(history.created_at)}</span>
                           </div>
                           <p className="text-muted-foreground text-xs">

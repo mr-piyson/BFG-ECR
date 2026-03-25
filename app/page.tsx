@@ -2,7 +2,7 @@ import { Header } from "@/components/header";
 import { Sidebar } from "@/components/sidebar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import sql from "@/lib/db";
+import { prisma } from "@/lib/db";
 import Link from "next/link";
 import { StatusPieChart, ProjectBarChart } from "@/components/dashboard-charts";
 
@@ -10,54 +10,65 @@ export const revalidate = 60;
 
 async function getDashboardStats() {
   try {
-    const ecrStats = await sql`
-      SELECT 
-        status,
-        COUNT(*) as count
-      FROM ecrs
-      GROUP BY status
-      ORDER BY count DESC
-    `;
-
-    const projectStats = await sql`
-      SELECT 
-        p.code,
-        p.name,
-        COUNT(e.id) as count
-      FROM projects p
-      LEFT JOIN ecrs e ON p.id = e.project_id
-      GROUP BY p.id, p.code, p.name
-      ORDER BY count DESC
-      LIMIT 5
-    `;
-
-    const totalEcrs: any = await sql`SELECT COUNT(*) as count FROM ecrs`;
-    const releasedEcrs: any = await sql`SELECT COUNT(*) as count FROM ecrs WHERE status = 'RELEASED'`;
-    const onHoldEcrs: any = await sql`SELECT COUNT(*) as count FROM ecrs WHERE status = 'ON_HOLD'`;
-    const recentActivity: any = await sql`
-      SELECT 
-        sh.id,
-        sh.ecr_id,
-        sh.stage,
-        sh.to_status,
-        sh.created_at,
-        e.ecr_number,
-        e.current_stage,
-        u.name as user_name
-      FROM stage_histories sh
-      JOIN ecrs e ON sh.ecr_id = e.id
-      JOIN users u ON sh.acted_by_user_id = u.id
-      ORDER BY sh.created_at DESC
-      LIMIT 10
-    `;
+    const [statusCounts, projectCounts, totalEcrs, releasedEcrs, onHoldEcrs, recentActivity] = await Promise.all([
+      prisma.ecr.groupBy({
+        by: ['status'],
+        _count: { _all: true }
+      }),
+      prisma.project.findMany({
+        take: 5,
+        include: { 
+          _count: { 
+            select: { ecrs: true } 
+          } 
+        },
+        orderBy: { 
+          ecrs: { _count: 'desc' } 
+        }
+      }),
+      prisma.ecr.count(),
+      prisma.ecr.count({ where: { status: 'RELEASED' } }),
+      prisma.ecr.count({ where: { status: 'ON_HOLD' } }),
+      prisma.stageHistory.findMany({
+        take: 10,
+        orderBy: { createdAt: 'desc' },
+        include: {
+          ecr: { 
+            select: { 
+              ecrNumber: true, 
+              currentStage: true 
+            } 
+          },
+          actedByUser: { 
+            select: { 
+              name: true 
+            } 
+          }
+        }
+      })
+    ]);
 
     return {
-      totalEcrs: Number(totalEcrs[0]?.count) || 0,
-      releasedEcrs: Number(releasedEcrs[0]?.count) || 0,
-      onHoldEcrs: Number(onHoldEcrs[0]?.count) || 0,
-      ecrStats: Number(ecrStats) || [],
-      projectStats: Number(projectStats) || [],
-      recentActivity: Number(recentActivity) || [],
+      totalEcrs,
+      releasedEcrs,
+      onHoldEcrs,
+      ecrStats: statusCounts.map(s => ({ 
+        status: s.status, 
+        count: s._count._all 
+      })),
+      projectStats: projectCounts.map(p => ({ 
+        code: p.code, 
+        name: p.name, 
+        count: p._count.ecrs 
+      })),
+      recentActivity: recentActivity.map(sh => ({
+        id: sh.id,
+        ecr_number: sh.ecr.ecrNumber,
+        stage: sh.stage,
+        to_status: sh.toStatus,
+        created_at: sh.createdAt.toISOString(),
+        user_name: sh.actedByUser.name
+      })),
     };
   } catch (error) {
     console.error("Dashboard stats error:", error);

@@ -225,6 +225,7 @@ model DesignInitialForm {
   flowStatus             ECRFlowStatus @default(PENDING) @map("flow_status")
   isSkipCosting          Boolean       @default(false) @map("is_skip_costing")
   isSkipProjectManager   Boolean       @default(false) @map("is_skip_project_manager")
+  isSkipMeeting          Boolean       @default(false) @map("is_skip_meeting")
   isSkipQuality          Boolean       @default(false) @map("is_skip_quality")
   submittedAt            DateTime?     @map("submitted_at")
   updatedAt              DateTime      @updatedAt @map("updated_at")
