@@ -29,6 +29,7 @@ export default function NewECRPage() {
     change_description: "",
     is_skip_costing: false,
     is_skip_project_manager: false,
+    is_skip_meeting: false,
     is_skip_quality: false,
   });
 
@@ -87,7 +88,12 @@ export default function NewECRPage() {
                 <div className="flex flex-row gap-4">
                   <label className="block text-sm font-medium mb-2">
                     Project
-                    <select required value={formData.project_id} onChange={(e) => setFormData({ ...formData, project_id: e.target.value })} className="w-full px-4 py-2 border border-border rounded-lg">
+                    <select
+                      required
+                      value={formData.project_id}
+                      onChange={(e) => setFormData({ ...formData, project_id: e.target.value })}
+                      className="w-full px-4 py-2 border border-border rounded-lg"
+                    >
                       <option value="">Select a project...</option>
                       {projects.map((project) => (
                         <option key={project.id} value={project.id}>
@@ -98,7 +104,11 @@ export default function NewECRPage() {
                   </label>
                   <label className="block text-sm font-medium mb-2">
                     Sector
-                    <select value={formData.project_id} onChange={(e) => setFormData({ ...formData, project_id: e.target.value })} className="w-full px-4 py-2 border border-border rounded-lg">
+                    <select
+                      value={formData.project_id}
+                      onChange={(e) => setFormData({ ...formData, project_id: e.target.value })}
+                      className="w-full px-4 py-2 border border-border rounded-lg"
+                    >
                       <option value="">Select a project sector...</option>
                     </select>
                   </label>
@@ -123,32 +133,75 @@ export default function NewECRPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium mb-2">CR Received On *</label>
-                    <input type="date" required value={formData.cr_received_on} onChange={(e) => setFormData({ ...formData, cr_received_on: e.target.value })} className="w-full px-4 py-2 border border-border rounded-lg" />
+                    <input
+                      type="date"
+                      required
+                      value={formData.cr_received_on}
+                      onChange={(e) => setFormData({ ...formData, cr_received_on: e.target.value })}
+                      className="w-full px-4 py-2 border border-border rounded-lg"
+                    />
                   </div>
                   <div>
                     <label className="block text-sm font-medium mb-2">CR Number</label>
-                    <input type="text" required value={formData.cr_by} onChange={(e) => setFormData({ ...formData, cr_by: e.target.value })} className="w-full px-4 py-2 border border-border rounded-lg" placeholder="Customer or department name" />
+                    <input
+                      type="text"
+                      required
+                      value={formData.cr_by}
+                      onChange={(e) => setFormData({ ...formData, cr_by: e.target.value })}
+                      className="w-full px-4 py-2 border border-border rounded-lg"
+                      placeholder="Customer or department name"
+                    />
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium mb-2">Change Description *</label>
-                  <textarea required value={formData.change_description} onChange={(e) => setFormData({ ...formData, change_description: e.target.value })} className="w-full px-4 py-2 border border-border rounded-lg min-h-32" placeholder="Describe the requested change in detail..." />
+                  <textarea
+                    required
+                    value={formData.change_description}
+                    onChange={(e) => setFormData({ ...formData, change_description: e.target.value })}
+                    className="w-full px-4 py-2 border border-border rounded-lg min-h-32"
+                    placeholder="Describe the requested change in detail..."
+                  />
                 </div>
 
                 <div className="pt-4 border-t border-border">
                   <p className="text-sm font-medium mb-3">Skip Stages (optional)</p>
                   <div className="space-y-2">
                     <label className="flex items-center gap-2">
-                      <input type="checkbox" checked={formData.is_skip_costing} onChange={(e) => setFormData({ ...formData, is_skip_costing: e.target.checked })} className="w-4 h-4" />
+                      <input
+                        type="checkbox"
+                        checked={formData.is_skip_costing}
+                        onChange={(e) => setFormData({ ...formData, is_skip_costing: e.target.checked })}
+                        className="w-4 h-4"
+                      />
                       <span className="text-sm">Skip Costing Stage</span>
                     </label>
                     <label className="flex items-center gap-2">
-                      <input type="checkbox" checked={formData.is_skip_project_manager} onChange={(e) => setFormData({ ...formData, is_skip_project_manager: e.target.checked })} className="w-4 h-4" />
+                      <input
+                        type="checkbox"
+                        checked={formData.is_skip_project_manager}
+                        onChange={(e) => setFormData({ ...formData, is_skip_project_manager: e.target.checked })}
+                        className="w-4 h-4"
+                      />
                       <span className="text-sm">Skip Project Manager Stage</span>
                     </label>
                     <label className="flex items-center gap-2">
-                      <input type="checkbox" checked={formData.is_skip_quality} onChange={(e) => setFormData({ ...formData, is_skip_quality: e.target.checked })} className="w-4 h-4" />
+                      <input
+                        type="checkbox"
+                        checked={formData.is_skip_meeting}
+                        onChange={(e) => setFormData({ ...formData, is_skip_meeting: e.target.checked })}
+                        className="w-4 h-4"
+                      />
+                      <span className="text-sm">Skip ECR Meeting Stage</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={formData.is_skip_quality}
+                        onChange={(e) => setFormData({ ...formData, is_skip_quality: e.target.checked })}
+                        className="w-4 h-4"
+                      />
                       <span className="text-sm">Skip Quality Check Stage</span>
                     </label>
                   </div>
