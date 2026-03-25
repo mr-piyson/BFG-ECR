@@ -13,6 +13,8 @@ export const metadata: Metadata = {
   generator: 'v0.app',
 }
 
+import { Providers } from '@/components/providers'
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -21,10 +23,13 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body className="font-sans antialiased bg-background text-foreground">
-        {children}
-        <Toaster richColors position="top-right" />
-        <Analytics />
+        <Providers>
+          {children}
+          <Toaster richColors position="top-right" />
+          <Analytics />
+        </Providers>
       </body>
     </html>
   )
 }
+

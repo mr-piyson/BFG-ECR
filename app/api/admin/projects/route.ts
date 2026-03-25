@@ -1,12 +1,15 @@
 import { NextResponse } from "next/server";
-import sql from "@/lib/db";
+import { prisma } from "@/lib/db";
+import { adminGuard } from "@/lib/admin-guard";
 
 export async function GET() {
+  const guard = await adminGuard();
+  if (guard) return guard;
+
   try {
-    const projects = await sql`
-      SELECT * FROM projects
-      ORDER BY created_at DESC
-    `;
+    const projects = await prisma.project.findMany({
+      orderBy: { createdAt: "desc" },
+    });
     return NextResponse.json(projects);
   } catch (error) {
     console.error("[Admin Projects API]", error);
@@ -15,19 +18,25 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const guard = await adminGuard();
+  if (guard) return guard;
+
   try {
     const body = await request.json();
-    const { code, name, description, is_active } = body;
+    const { code, name, description, isActive } = body;
 
     if (!code || !name) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const [project] = await sql`
-      INSERT INTO projects (code, name, description, is_active)
-      VALUES (${code}, ${name}, ${description || null}, ${is_active ?? true})
-      RETURNING *
-    `;
+    const project = await prisma.project.create({
+      data: {
+        code,
+        name,
+        description: description || null,
+        isActive: isActive ?? true,
+      },
+    });
 
     return NextResponse.json(project, { status: 201 });
   } catch (error) {
@@ -35,3 +44,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Failed to create project" }, { status: 500 });
   }
 }
+

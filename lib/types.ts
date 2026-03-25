@@ -47,10 +47,10 @@ export interface User {
   name: string
   role: UserRole
   department: string | null
-  avatar_url: string | null
-  is_active: boolean
-  created_at: string
-  updated_at: string
+  avatarUrl: string | null
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
 }
 
 export interface Project {
@@ -58,50 +58,51 @@ export interface Project {
   code: string
   name: string
   description: string | null
-  is_active: boolean
-  created_at: string
-  updated_at: string
+  isActive: boolean
+  createdAt: string
+  updatedAt: string
 }
 
 export interface ProjectScope {
   id: string
-  project_id: string
+  projectId: string
   name: string
   description: string | null
-  is_active: boolean
-  created_at: string
+  isActive: boolean
+  createdAt: string
 }
 
 export interface ProjectAssignment {
   id: string
-  user_id: string
-  project_id: string
+  userId: string
+  projectId: string
   role: UserRole
-  is_primary: boolean
-  assigned_at: string
+  isPrimary: boolean
+  assignedAt: string
 }
 
 export interface ECR {
   id: string
-  ecr_number: number
-  project_id: string
-  scope_id: string | null
+  ecrNumber: number
+  projectId: string
+  scopeId: string | null
   status: ECRStatus
   source: ECRSource
-  current_stage: StageType
-  design_engineer_id: string
-  project_engineer_id: string | null
-  ecr_flow_label: string | null
-  is_pdf_generated: boolean
-  created_at: string
-  updated_at: string
-  released_at: string | null
+  currentStage: StageType
+  designEngineerId: string
+  projectEngineerId: string | null
+  ecrFlowLabel: string | null
+  isPdfGenerated: boolean
+  createdAt: string
+  updatedAt: string
+  releasedAt: string | null
   // Joined
   project?: Project
   scope?: ProjectScope
-  design_engineer?: User
-  project_engineer?: User | null
+  designEngineer?: User
+  projectEngineer?: User | null
 }
+
 
 export interface DesignInitialForm {
   id: string

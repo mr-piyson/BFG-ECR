@@ -1,12 +1,16 @@
 import { NextResponse } from "next/server";
-import sql from "@/lib/db";
+import { prisma } from "@/lib/db";
+import { adminGuard } from "@/lib/admin-guard";
+import bcrypt from "bcryptjs";
 
 export async function GET() {
+  const guard = await adminGuard();
+  if (guard) return guard;
+
   try {
-    const users = await sql`
-      SELECT * FROM users
-      ORDER BY created_at DESC
-    `;
+    const users = await prisma.user.findMany({
+      orderBy: { createdAt: "desc" },
+    });
     return NextResponse.json(users);
   } catch (error) {
     console.error("[Admin Users API]", error);
@@ -15,19 +19,31 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const guard = await adminGuard();
+  if (guard) return guard;
+
   try {
     const body = await request.json();
-    const { name, email, role, department, is_active } = body;
+    const { name, email, role, department, isActive, password } = body;
 
     if (!name || !email || !role) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
-    const [user] = await sql`
-      INSERT INTO users (name, email, role, department, is_active)
-      VALUES (${name}, ${email}, ${role}, ${department || null}, ${is_active ?? true})
-      RETURNING *
-    `;
+    // Default password if not provided
+    const defaultPassword = password || "BFG@123456";
+    const hashedPassword = await bcrypt.hash(defaultPassword, 10);
+
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        role,
+        department: department || null,
+        isActive: isActive ?? true,
+        password: hashedPassword,
+      },
+    });
 
     return NextResponse.json(user, { status: 201 });
   } catch (error) {
