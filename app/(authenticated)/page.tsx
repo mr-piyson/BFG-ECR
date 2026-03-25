@@ -1,5 +1,3 @@
-import { Header } from "@/components/header";
-import { Sidebar } from "@/components/sidebar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { prisma } from "@/lib/db";
@@ -87,12 +85,7 @@ export default async function DashboardPage() {
   const { totalEcrs, releasedEcrs, onHoldEcrs, ecrStats, projectStats, recentActivity } = await getDashboardStats();
 
   return (
-    <div className="flex h-screen bg-background">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-auto">
-          <div className="p-8 space-y-8">
+    <div className="p-8 space-y-8">
             <div className="space-y-2">
               <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
               <p className="text-muted-foreground">Overview of all ECR requests and their status</p>
@@ -153,9 +146,6 @@ export default async function DashboardPage() {
                 )}
               </div>
             </Card>
-          </div>
-        </main>
-      </div>
     </div>
   );
 }

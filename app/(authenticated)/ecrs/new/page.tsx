@@ -1,8 +1,6 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Header } from "@/components/header";
-import { Sidebar } from "@/components/sidebar";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -131,12 +129,7 @@ export default function NewECRPage() {
   };
 
   return (
-    <div className="flex h-screen bg-background">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-auto">
-          <div className="p-8 max-w-2xl">
+    <div className="p-8 max-w-2xl">
             <div className="mb-8">
               <h1 className="text-3xl font-bold mb-2">Create New ECR</h1>
               <p className="text-muted-foreground">Start a new engineering change request</p>
@@ -378,9 +371,6 @@ export default function NewECRPage() {
                 </div>
               </form>
             </Card>
-          </div>
-        </main>
-      </div>
     </div>
   );
 }

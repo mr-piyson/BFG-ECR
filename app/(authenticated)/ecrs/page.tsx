@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Header } from '@/components/header'
-import { Sidebar } from '@/components/sidebar'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -59,12 +57,7 @@ export default function ECRsPage() {
   })
 
   return (
-    <div className="flex h-screen bg-background">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-auto">
-          <div className="p-8 space-y-6">
+    <div className="p-8 space-y-6">
             <div className="flex items-center justify-between">
               <div>
                 <h2 className="text-3xl font-bold tracking-tight">ECRs</h2>
@@ -153,9 +146,6 @@ export default function ECRsPage() {
                 </div>
               )}
             </Card>
-          </div>
-        </main>
-      </div>
     </div>
   )
 }

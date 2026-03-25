@@ -1,7 +1,5 @@
 'use client'
 
-import { Header } from '@/components/header'
-import { Sidebar } from '@/components/sidebar'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -9,12 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export default function SettingsPage() {
   return (
-    <div className="flex h-screen bg-background">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-auto">
-          <div className="p-8 space-y-6">
+    <div className="p-8 space-y-6">
             <div className="space-y-2">
               <h2 className="text-3xl font-bold tracking-tight">Settings</h2>
               <p className="text-muted-foreground">Manage your account and preferences</p>
@@ -129,9 +122,6 @@ export default function SettingsPage() {
                 </Card>
               </TabsContent>
             </Tabs>
-          </div>
-        </main>
-      </div>
     </div>
   )
 }

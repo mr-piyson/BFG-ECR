@@ -1,8 +1,6 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Header } from '@/components/header'
-import { Sidebar } from '@/components/sidebar'
 import { Card } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { StatusBadge, FlowStatusBadge } from '@/components/status-badge'
@@ -61,30 +59,18 @@ export default function ECRDetailPage({ params }: { params: Promise<{ id: string
 
   if (loading) {
     return (
-      <div className="flex h-screen bg-background">
-        <Sidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Header />
-          <main className="flex-1 flex items-center justify-center">
-            <p className="text-muted-foreground">Loading ECR details...</p>
-          </main>
-        </div>
+      <div className="flex-1 flex items-center justify-center p-8">
+        <p className="text-muted-foreground">Loading ECR details...</p>
       </div>
     )
   }
 
   if (!data || !data.ecr) {
     return (
-      <div className="flex h-screen bg-background">
-        <Sidebar />
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <Header />
-          <main className="flex-1 flex items-center justify-center">
-            <div className="flex items-center gap-2 text-red-600">
-              <AlertCircle className="w-5 h-5" />
-              <p>ECR not found</p>
-            </div>
-          </main>
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="flex items-center gap-2 text-red-600">
+          <AlertCircle className="w-5 h-5" />
+          <p>ECR not found</p>
         </div>
       </div>
     )
@@ -95,12 +81,7 @@ export default function ECRDetailPage({ params }: { params: Promise<{ id: string
   const stageProgress = ((currentStageIndex + 1) / STAGE_ORDER.length) * 100
 
   return (
-    <div className="flex h-screen bg-background">
-      <Sidebar />
-      <div className="flex-1 flex flex-col overflow-hidden">
-        <Header />
-        <main className="flex-1 overflow-auto">
-          <div className="p-8 space-y-6">
+    <div className="p-8 space-y-6">
             {/* Header */}
             <div className="space-y-4">
               <div className="flex items-start justify-between">
@@ -424,9 +405,6 @@ export default function ECRDetailPage({ params }: { params: Promise<{ id: string
                 </Card>
               </TabsContent>
             </Tabs>
-          </div>
-        </main>
-      </div>
     </div>
   )
 }
