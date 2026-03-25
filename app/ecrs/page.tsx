@@ -20,6 +20,7 @@ interface ECRRow {
   status: string
   created_at: string
   change_description?: string
+  scope_name?: string
 }
 
 export default function ECRsPage() {
@@ -117,6 +118,7 @@ export default function ECRsPage() {
                         <th className="px-6 py-3 text-left font-semibold">ECR #</th>
                         <th className="px-6 py-3 text-left font-semibold">Title</th>
                         <th className="px-6 py-3 text-left font-semibold">Project</th>
+                        <th className="px-6 py-3 text-left font-semibold">Scopes</th>
                         <th className="px-6 py-3 text-left font-semibold">Status</th>
                         <th className="px-6 py-3 text-left font-semibold">Stage</th>
                         <th className="px-6 py-3 text-left font-semibold">Created</th>
@@ -129,6 +131,7 @@ export default function ECRsPage() {
                           <td className="px-6 py-4 font-medium">#{ecr.ecr_number}</td>
                           <td className="px-6 py-4">{ecr.change_description || '—'}</td>
                           <td className="px-6 py-4 text-sm text-muted-foreground">{ecr.project_code}</td>
+                          <td className="px-6 py-4 text-sm font-medium">{ecr.scope_name || '—'}</td>
                           <td className="px-6 py-4">
                             <StatusBadge status={ecr.status as any} />
                           </td>

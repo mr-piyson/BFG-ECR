@@ -16,14 +16,21 @@ interface Project {
   name: string;
 }
 
+interface ProjectScope {
+  id: string;
+  name: string;
+}
+
 export default function NewECRPage() {
   const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
+  const [scopes, setScopes] = useState<ProjectScope[]>([]);
+  const [selectedScopeIds, setSelectedScopeIds] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     project_id: "",
     source: "CUSTOMER",
-    design_engineer_id: "user-de-1", // Default to Alice Morgan
+    design_engineer_id: "f185b755-6218-4015-9dae-61476dd8fcd6", // Default to seeded admin for now or first user
     cr_received_on: new Date().toISOString().split("T")[0],
     cr_by: "",
     change_description: "",
@@ -43,9 +50,27 @@ export default function NewECRPage() {
         console.error("Failed to fetch projects:", error);
       }
     };
-
     fetchProjects();
   }, []);
+
+  useEffect(() => {
+    if (!formData.project_id) {
+      setScopes([]);
+      setSelectedScopeIds([]);
+      return;
+    }
+
+    const fetchScopes = async () => {
+      try {
+        const res = await fetch(`/api/admin/projects/${formData.project_id}/scopes`);
+        const data = await res.json();
+        setScopes(data.filter((s: any) => s.isActive));
+      } catch (error) {
+        console.error("Failed to fetch scopes:", error);
+      }
+    };
+    fetchScopes();
+  }, [formData.project_id]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,7 +80,10 @@ export default function NewECRPage() {
       const res = await fetch("/api/ecrs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        body: JSON.stringify({
+          ...formData,
+          scope_ids: selectedScopeIds
+        }),
       });
 
       if (!res.ok) toast.error("Failed to create ECR");
@@ -85,34 +113,49 @@ export default function NewECRPage() {
 
             <Card className="p-8">
               <form onSubmit={handleSubmit} className="space-y-6">
-                <div className="flex flex-row gap-4">
-                  <label className="block text-sm font-medium mb-2">
-                    Project
-                    <select
-                      required
-                      value={formData.project_id}
-                      onChange={(e) => setFormData({ ...formData, project_id: e.target.value })}
-                      className="w-full px-4 py-2 border border-border rounded-lg"
-                    >
-                      <option value="">Select a project...</option>
-                      {projects.map((project) => (
-                        <option key={project.id} value={project.id}>
-                          {project.code} - {project.name}
-                        </option>
-                      ))}
-                    </select>
-                  </label>
-                  <label className="block text-sm font-medium mb-2">
-                    Sector
-                    <select
-                      value={formData.project_id}
-                      onChange={(e) => setFormData({ ...formData, project_id: e.target.value })}
-                      className="w-full px-4 py-2 border border-border rounded-lg"
-                    >
-                      <option value="">Select a project sector...</option>
-                    </select>
-                  </label>
+                <div>
+                  <label className="block text-sm font-medium mb-2 font-bold">Project Identification</label>
+                  <select
+                    required
+                    value={formData.project_id}
+                    onChange={(e) => setFormData({ ...formData, project_id: e.target.value })}
+                    className="w-full px-4 py-2 border border-border rounded-lg"
+                  >
+                    <option value="">Select a project...</option>
+                    {projects.map((project) => (
+                      <option key={project.id} value={project.id}>
+                        {project.code} - {project.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
+
+                {formData.project_id && (
+                  <div>
+                    <label className="block text-sm font-medium mb-3 font-bold">Project Scopes (select multiple)</label>
+                    <div className="grid grid-cols-2 gap-3 p-4 bg-muted/30 rounded-lg border border-border">
+                      {scopes.length === 0 ? (
+                        <p className="text-xs text-muted-foreground col-span-2 italic">No active scopes found for this project.</p>
+                      ) : scopes.map((scope) => (
+                        <label key={scope.id} className="flex items-center gap-3 p-2 hover:bg-muted/50 rounded-md cursor-pointer transition-colors">
+                          <input
+                            type="checkbox"
+                            checked={selectedScopeIds.includes(scope.id)}
+                            onChange={(e) => {
+                              if (e.target.checked) {
+                                setSelectedScopeIds([...selectedScopeIds, scope.id]);
+                              } else {
+                                setSelectedScopeIds(selectedScopeIds.filter(id => id !== scope.id));
+                              }
+                            }}
+                            className="w-4 h-4 rounded border-gray-300 text-primary focus:ring-primary"
+                          />
+                          <span className="text-sm font-medium">{scope.name}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div>
                   <label className="block text-sm font-medium mb-2">Source</label>
                   <div className="flex gap-4">

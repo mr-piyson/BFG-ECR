@@ -31,10 +31,10 @@ async function getDashboardStats() {
       LIMIT 5
     `;
 
-    const totalEcrs = await sql`SELECT COUNT(*) as count FROM ecrs`;
-    const releasedEcrs = await sql`SELECT COUNT(*) as count FROM ecrs WHERE status = 'RELEASED'`;
-    const onHoldEcrs = await sql`SELECT COUNT(*) as count FROM ecrs WHERE status = 'ON_HOLD'`;
-    const recentActivity = await sql`
+    const totalEcrs: any = await sql`SELECT COUNT(*) as count FROM ecrs`;
+    const releasedEcrs: any = await sql`SELECT COUNT(*) as count FROM ecrs WHERE status = 'RELEASED'`;
+    const onHoldEcrs: any = await sql`SELECT COUNT(*) as count FROM ecrs WHERE status = 'ON_HOLD'`;
+    const recentActivity: any = await sql`
       SELECT 
         sh.id,
         sh.ecr_id,

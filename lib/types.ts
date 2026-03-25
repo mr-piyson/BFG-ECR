@@ -85,7 +85,7 @@ export interface ECR {
   id: string
   ecrNumber: number
   projectId: string
-  scopeId: string | null
+  scopes?: ProjectScope[]
   status: ECRStatus
   source: ECRSource
   currentStage: StageType
@@ -98,10 +98,10 @@ export interface ECR {
   releasedAt: string | null
   // Joined
   project?: Project
-  scope?: ProjectScope
   designEngineer?: User
   projectEngineer?: User | null
 }
+
 
 
 export interface DesignInitialForm {

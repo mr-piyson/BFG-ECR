@@ -185,7 +185,21 @@ export default function ECRDetailPage({ params }: { params: Promise<{ id: string
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div>
                         <p className="text-muted-foreground">Project</p>
-                        <p className="font-medium">{ecr.project?.name}</p>
+                        <p className="font-medium">{ecr.project?.name} ({ecr.project?.code})</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Scopes</p>
+                        <div className="flex flex-wrap gap-1 mt-1">
+                          {ecr.scopes && ecr.scopes.length > 0 ? (
+                            ecr.scopes.map((s: any) => (
+                              <span key={s.id} className="bg-primary/10 text-primary text-[10px] font-bold px-2 py-0.5 rounded border border-primary/20">
+                                {s.name}
+                              </span>
+                            ))
+                          ) : (
+                            <span className="text-muted-foreground italic text-xs">No scopes assigned</span>
+                          )}
+                        </div>
                       </div>
                       <div>
                         <p className="text-muted-foreground">Source</p>

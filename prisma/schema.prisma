@@ -185,7 +185,6 @@ model Ecr {
   id                String    @id @default(dbgenerated("gen_random_uuid()::text"))
   ecrNumber         Int       @unique @default(autoincrement()) @map("ecr_number")
   projectId         String    @map("project_id")
-  scopeId           String?   @map("scope_id")
   status            ECRStatus @default(DRAFT)
   source            ECRSource @default(CUSTOMER)
   currentStage      StageType @default(DESIGN_ENGINEER_INITIAL) @map("current_stage")
@@ -199,7 +198,7 @@ model Ecr {
 
   // Relations
   project            Project             @relation(fields: [projectId], references: [id])
-  scope              ProjectScope?       @relation(fields: [scopeId], references: [id])
+  scopes             ProjectScope[]
   designEngineer     User                @relation("DesignEngineer", fields: [designEngineerId], references: [id])
   projectEngineer    User?               @relation("ProjectEngineer", fields: [projectEngineerId], references: [id])
   designInitialForm  DesignInitialForm?
