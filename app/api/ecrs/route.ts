@@ -90,7 +90,7 @@ export async function POST(request: Request) {
           connect: (scope_ids || []).map((id: string) => ({ id })),
         },
         source: source,
-        status: 'DRAFT',
+        status: 'RELEASED',
         currentStage: 'DESIGN_ENGINEER_INITIAL',
         designEngineerId: design_engineer_id,
         projectEngineerId: project_engineer_id || null,

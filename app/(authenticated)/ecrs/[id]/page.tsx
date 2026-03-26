@@ -200,11 +200,11 @@ export default function ECRDetailPage({ params }: { params: Promise<{ id: string
       <Card className="p-8 shadow-sm border-primary/5 bg-muted/20">
         <div className="relative">
           {/* Horizontal Track Background */}
-          <div className="absolute top-5 left-0 w-full h-0.5 bg-muted-foreground/10" />
+          <div className="absolute top-8 left-0 w-full h-0.5 bg-muted-foreground/10" />
 
           {/* Active Progress Track */}
           <div
-            className="absolute top-5 left-0 h-0.5 bg-primary transition-all duration-700 ease-in-out shadow-[0_0_8px_rgba(var(--primary),0.5)]"
+            className="absolute top-8 left-0 h-0.5 bg-primary transition-all duration-700 ease-in-out shadow-[0_0_8px_rgba(var(--primary),0.5)]"
             style={{ width: `${Math.min(stageProgress, 100)}%` }}
           />
 

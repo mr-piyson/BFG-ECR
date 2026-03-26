@@ -41,7 +41,7 @@ export function ReturnDialog({
           remark,
         }),
       });
-      if (!res.ok) toast.error();
+      if (!res.ok) toast.error('Failed to return ECR');
       toast.success('ECR returned for rework');
       onUpdate();
       onClose();

@@ -49,7 +49,7 @@ export function FlowStatusBadge({ status, className }: FlowStatusBadgeProps) {
         className,
       )}
     >
-      <span className={cn('w-1.5 h-1.5 rounded-full flex-shrink-0', dotColor[status])} />
+      <span className={cn('w-1.5 h-1.5 rounded-full shrink-0', dotColor[status])} />
       {FLOW_STATUS_LABELS[status]}
     </span>
   );

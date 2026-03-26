@@ -72,7 +72,7 @@ export function LoginForm() {
 
   return (
     <Card className="w-full max-w-md bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl relative overflow-hidden group">
-      <div className="absolute top-0 left-0 w-full h-[2px] bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50" />
+      <div className="absolute top-0 left-0 w-full h-[2px] bg-linear-to-r from-transparent via-blue-500 to-transparent opacity-50" />
       <CardHeader className="space-y-1">
         <CardTitle className="text-2xl font-bold tracking-tight text-white text-center">
           BFG International

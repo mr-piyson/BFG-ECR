@@ -103,7 +103,7 @@ export function StagePipeline({
                         {ROLE_LABELS[ownerRole]}
                       </p>
                     </div>
-                    <div className="flex-shrink-0">{statusIcon}</div>
+                    <div className="shrink-0">{statusIcon}</div>
                   </div>
 
                   {/* Stage status line */}
@@ -149,7 +149,7 @@ export function StagePipeline({
 
               {/* Connector line between stages */}
               {index < STAGE_ORDER.length - 1 && (
-                <div className="flex items-center h-12 flex-shrink-0 px-0.5 mt-1">
+                <div className="flex items-center h-12 shrink-0 px-0.5 mt-1">
                   <div
                     className={cn(
                       'w-4 h-px',
@@ -163,12 +163,12 @@ export function StagePipeline({
         })}
 
         {/* Released end state */}
-        <div className="flex items-center h-12 flex-shrink-0 px-0.5 mt-1">
+        <div className="flex items-center h-12 shrink-0 px-0.5 mt-1">
           <div className={cn('w-4 h-px', isReleased ? 'bg-green-400' : 'bg-border')} />
         </div>
         <div
           className={cn(
-            'flex-shrink-0 flex flex-col items-center justify-center border rounded-lg px-3 py-3 mt-0',
+            'shrink-0 flex flex-col items-center justify-center border rounded-lg px-3 py-3 mt-0',
             isReleased ? 'border-green-200 bg-green-50' : 'border-border bg-muted/30 opacity-40',
           )}
         >
