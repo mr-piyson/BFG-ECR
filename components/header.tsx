@@ -1,11 +1,11 @@
-'use client'
+'use client';
 
-import { Zap, LogOut } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { useSession, signOut } from 'next-auth/react'
+import { Zap, LogOut } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { useSession, signOut } from 'next-auth/react';
 
 export function Header() {
-  const { data: session } = useSession()
+  const { data: session } = useSession();
 
   return (
     <header className="border-b border-border bg-card sticky top-0 z-50">
@@ -35,6 +35,5 @@ export function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }
-

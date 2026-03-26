@@ -1,14 +1,14 @@
-import { NextResponse } from 'next/server'
-import sql from '@/lib/db'
+import { NextResponse } from 'next/server';
+import sql from '@/lib/db';
 
 export async function GET(request: Request) {
   try {
-    const { searchParams } = new URL(request.url)
-    const userId = searchParams.get('userId') || 'user-de-1'
+    const { searchParams } = new URL(request.url);
+    const userId = searchParams.get('userId') || 'user-de-1';
 
     // Get current user role
-    const [user] = await sql`SELECT id, role FROM users WHERE id = ${userId}`
-    const role = user?.role || 'DESIGN_ENGINEER'
+    const [user] = await sql`SELECT id, role FROM users WHERE id = ${userId}`;
+    const role = user?.role || 'DESIGN_ENGINEER';
 
     // Summary counts
     const [counts] = await sql`
@@ -21,7 +21,7 @@ export async function GET(request: Request) {
         COUNT(*) FILTER (WHERE status = 'DRAFT') AS draft,
         COUNT(*) FILTER (WHERE status = 'CANCELLED') AS cancelled
       FROM ecrs
-    `
+    `;
 
     // By project
     const byProject = await sql`
@@ -30,7 +30,7 @@ export async function GET(request: Request) {
       LEFT JOIN ecrs e ON e.project_id = p.id AND e.status != 'CANCELLED'
       GROUP BY p.id, p.code, p.name
       ORDER BY count DESC
-    `
+    `;
 
     // By status
     const byStatus = await sql`
@@ -39,20 +39,20 @@ export async function GET(request: Request) {
       WHERE status != 'CANCELLED'
       GROUP BY status
       ORDER BY count DESC
-    `
+    `;
 
     // My queue — ECRs awaiting MY action based on role
-    let myQueueCondition = sql`FALSE`
+    let myQueueCondition = sql`FALSE`;
     if (role === 'DESIGN_ENGINEER') {
-      myQueueCondition = sql`(e.design_engineer_id = ${userId} AND e.status IN ('DRAFT','RETURNED_TO_DESIGN','PENDING_DESIGN_MEETING','UNDER_DESIGN_MEETING'))`
+      myQueueCondition = sql`(e.design_engineer_id = ${userId} AND e.status IN ('DRAFT','RETURNED_TO_DESIGN','PENDING_DESIGN_MEETING','UNDER_DESIGN_MEETING'))`;
     } else if (role === 'COSTING_ENGINEER') {
-      myQueueCondition = sql`(e.status IN ('PENDING_COSTING','UNDER_COSTING'))`
+      myQueueCondition = sql`(e.status IN ('PENDING_COSTING','UNDER_COSTING'))`;
     } else if (role === 'PROJECT_ENGINEER') {
-      myQueueCondition = sql`(e.project_engineer_id = ${userId} AND e.status IN ('PENDING_PROJECT_MANAGER','UNDER_PROJECT_MANAGER'))`
+      myQueueCondition = sql`(e.project_engineer_id = ${userId} AND e.status IN ('PENDING_PROJECT_MANAGER','UNDER_PROJECT_MANAGER'))`;
     } else if (role === 'QUALITY_ENGINEER') {
-      myQueueCondition = sql`(e.status IN ('PENDING_QUALITY_CHECK','UNDER_QUALITY_CHECK'))`
+      myQueueCondition = sql`(e.status IN ('PENDING_QUALITY_CHECK','UNDER_QUALITY_CHECK'))`;
     } else if (role === 'ADMIN') {
-      myQueueCondition = sql`(e.status IN ('ON_HOLD','PENDING_COSTING','PENDING_PROJECT_MANAGER','PENDING_DESIGN_MEETING','PENDING_QUALITY_CHECK'))`
+      myQueueCondition = sql`(e.status IN ('ON_HOLD','PENDING_COSTING','PENDING_PROJECT_MANAGER','PENDING_DESIGN_MEETING','PENDING_QUALITY_CHECK'))`;
     }
 
     const myQueue = await sql`
@@ -66,7 +66,7 @@ export async function GET(request: Request) {
       WHERE ${myQueueCondition}
       ORDER BY e.updated_at DESC
       LIMIT 8
-    `
+    `;
 
     // Recent activity
     const recentActivity = await sql`
@@ -78,7 +78,7 @@ export async function GET(request: Request) {
       JOIN projects p ON p.id = e.project_id
       ORDER BY sh.created_at DESC
       LIMIT 10
-    `
+    `;
 
     return NextResponse.json({
       counts: {
@@ -94,9 +94,9 @@ export async function GET(request: Request) {
       by_status: byStatus,
       my_queue: myQueue,
       recent_activity: recentActivity,
-    })
+    });
   } catch (error) {
-    console.error('[ECR Dashboard API]', error)
-    return NextResponse.json({ error: 'Failed to load dashboard' }, { status: 500 })
+    console.error('[ECR Dashboard API]', error);
+    return NextResponse.json({ error: 'Failed to load dashboard' }, { status: 500 });
   }
 }

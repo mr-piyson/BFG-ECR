@@ -1,12 +1,19 @@
 // import { neon } from '@neondatabase/serverless'
 
 // const sql = neon(process.env.DATABASE_URL!)
-import { PrismaPg } from "@prisma/adapter-pg";
-import pg from "pg";
+import { PrismaPg } from '@prisma/adapter-pg';
+import pg from 'pg';
 
 // export default sql
 
-import { ECRFlowStatus, ECRSource, ECRStatus, PrismaClient, StageType, UserRole } from "@prisma/client";
+import {
+  ECRFlowStatus,
+  ECRSource,
+  ECRStatus,
+  PrismaClient,
+  StageType,
+  UserRole,
+} from '@prisma/client';
 
 const prismaClientSingleton = () => {
   // 1. Setup the standard Node-Postgres driver
@@ -25,7 +32,7 @@ declare global {
 
 export const prisma = globalThis.prismaGlobal ?? prismaClientSingleton();
 
-if (process.env.NODE_ENV !== "production") globalThis.prismaGlobal = prisma;
+if (process.env.NODE_ENV !== 'production') globalThis.prismaGlobal = prisma;
 
 /**
  * A wrapper that acts like the Neon 'sql' function

@@ -9,7 +9,7 @@ export const STAGE_LABELS: Record<string, string> = {
   cancelled: 'Cancelled',
   on_hold: 'On Hold',
   returned: 'Returned',
-}
+};
 
 export const STAGE_COLORS: Record<string, string> = {
   draft: 'bg-gray-200',
@@ -22,7 +22,7 @@ export const STAGE_COLORS: Record<string, string> = {
   cancelled: 'bg-red-200',
   on_hold: 'bg-yellow-200',
   returned: 'bg-orange-200',
-}
+};
 
 export const STAGE_TEXT_COLORS: Record<string, string> = {
   draft: 'text-gray-800',
@@ -35,14 +35,14 @@ export const STAGE_TEXT_COLORS: Record<string, string> = {
   cancelled: 'text-red-800',
   on_hold: 'text-yellow-800',
   returned: 'text-orange-800',
-}
+};
 
 export const PRIORITY_COLORS: Record<string, string> = {
   low: 'bg-gray-100 text-gray-800',
   medium: 'bg-blue-100 text-blue-800',
   high: 'bg-orange-100 text-orange-800',
   critical: 'bg-red-100 text-red-800',
-}
+};
 
 export const USER_ROLES: Record<string, string> = {
   admin: 'Administrator',
@@ -51,4 +51,4 @@ export const USER_ROLES: Record<string, string> = {
   project_manager: 'Project Manager',
   quality_lead: 'Quality Lead',
   viewer: 'Viewer',
-}
+};

@@ -1,4 +1,4 @@
-import type { ECRStatus, StageType } from '@/lib/types'
+import type { ECRStatus, StageType } from '@/lib/types';
 
 export const STAGE_ORDER: StageType[] = [
   'DESIGN_ENGINEER_INITIAL',
@@ -6,7 +6,7 @@ export const STAGE_ORDER: StageType[] = [
   'PROJECT_MANAGER',
   'DESIGN_ENGINEER_MEETING',
   'QUALITY_FINAL_CHECK',
-]
+];
 
 export const STAGE_LABELS: Record<StageType, string> = {
   DESIGN_ENGINEER_INITIAL: 'Design Initial',
@@ -14,7 +14,7 @@ export const STAGE_LABELS: Record<StageType, string> = {
   PROJECT_MANAGER: 'Project Manager',
   DESIGN_ENGINEER_MEETING: 'Design Meeting',
   QUALITY_FINAL_CHECK: 'Quality Check',
-}
+};
 
 export const STATUS_LABELS: Record<ECRStatus, string> = {
   DRAFT: 'Draft',
@@ -32,7 +32,7 @@ export const STATUS_LABELS: Record<ECRStatus, string> = {
   RETURNED_TO_PROJECT_MANAGER: 'Returned to PM',
   ON_HOLD: 'On Hold',
   CANCELLED: 'Cancelled',
-}
+};
 
 export const STATUS_COLORS: Record<ECRStatus, string> = {
   DRAFT: 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300',
@@ -47,15 +47,16 @@ export const STATUS_COLORS: Record<ECRStatus, string> = {
   RELEASED: 'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-200',
   RETURNED_TO_DESIGN: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-200',
   RETURNED_TO_COSTING: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-200',
-  RETURNED_TO_PROJECT_MANAGER: 'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-200',
+  RETURNED_TO_PROJECT_MANAGER:
+    'bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-200',
   ON_HOLD: 'bg-amber-100 text-amber-700 dark:bg-amber-900 dark:text-amber-200',
   CANCELLED: 'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-200',
-}
+};
 
 export const getStageProgress = (currentStage: StageType): number => {
-  return ((STAGE_ORDER.indexOf(currentStage) + 1) / STAGE_ORDER.length) * 100
-}
+  return ((STAGE_ORDER.indexOf(currentStage) + 1) / STAGE_ORDER.length) * 100;
+};
 
 export const canSkipStage = (stage: StageType, ecrStatus: ECRStatus): boolean => {
-  return ecrStatus.includes('SKIP')
-}
+  return ecrStatus.includes('SKIP');
+};

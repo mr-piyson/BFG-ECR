@@ -1,19 +1,19 @@
-import { NextResponse } from 'next/server'
-import sql from '@/lib/db'
+import { NextResponse } from 'next/server';
+import sql from '@/lib/db';
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = await params
-    const body = await request.json()
+    const { id } = await params;
+    const body = await request.json();
 
-    const { labour_cost, material_cost, total_cost, currency, budget_impact, notes } = body
+    const { labour_cost, material_cost, total_cost, currency, budget_impact, notes } = body;
 
     if (!total_cost) {
-      return NextResponse.json({ error: 'Total cost is required' }, { status: 400 })
+      return NextResponse.json({ error: 'Total cost is required' }, { status: 400 });
     }
 
     // Update or create costing form
-    const [existing] = await sql`SELECT id FROM costing_forms WHERE ecr_id = ${id}`
+    const [existing] = await sql`SELECT id FROM costing_forms WHERE ecr_id = ${id}`;
 
     if (existing) {
       await sql`
@@ -29,7 +29,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
           submitted_at = NOW(),
           updated_at = NOW()
         WHERE ecr_id = ${id}
-      `
+      `;
     } else {
       await sql`
         INSERT INTO costing_forms (
@@ -56,7 +56,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
           NOW(),
           NOW()
         )
-      `
+      `;
     }
 
     // Update ECR status
@@ -67,11 +67,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         current_stage = 'PROJECT_MANAGER'::"StageType",
         updated_at = NOW()
       WHERE id = ${id}
-    `
+    `;
 
-    return NextResponse.json({ success: true }, { status: 200 })
+    return NextResponse.json({ success: true }, { status: 200 });
   } catch (error) {
-    console.error('[Costing Form API]', error)
-    return NextResponse.json({ error: 'Failed to submit form' }, { status: 500 })
+    console.error('[Costing Form API]', error);
+    return NextResponse.json({ error: 'Failed to submit form' }, { status: 500 });
   }
 }

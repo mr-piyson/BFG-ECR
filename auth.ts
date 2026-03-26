@@ -1,15 +1,15 @@
-import NextAuth from "next-auth";
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import { prisma } from "@/lib/db";
-import Credentials from "next-auth/providers/credentials";
-import bcrypt from "bcryptjs";
-import { authConfig } from "./auth.config";
-import { z } from "zod";
+import NextAuth from 'next-auth';
+import { PrismaAdapter } from '@auth/prisma-adapter';
+import { prisma } from '@/lib/db';
+import Credentials from 'next-auth/providers/credentials';
+import bcrypt from 'bcryptjs';
+import { authConfig } from './auth.config';
+import { z } from 'zod';
 
 export const { auth, signIn, signOut, handlers } = NextAuth({
   ...authConfig,
   adapter: PrismaAdapter(prisma) as any,
-  session: { strategy: "jwt" },
+  session: { strategy: 'jwt' },
   providers: [
     Credentials({
       async authorize(credentials) {

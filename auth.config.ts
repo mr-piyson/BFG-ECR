@@ -1,20 +1,20 @@
-import type { NextAuthConfig } from "next-auth";
+import type { NextAuthConfig } from 'next-auth';
 
 export const authConfig = {
   pages: {
-    signIn: "/login",
+    signIn: '/login',
   },
   callbacks: {
     authorized({ auth, request: { nextUrl } }) {
       const isLoggedIn = !!auth?.user;
-      const isOnLogin = nextUrl.pathname.startsWith("/login");
-      
+      const isOnLogin = nextUrl.pathname.startsWith('/login');
+
       // Protect any page that is NOT the login page
       // Modify this if you want some public pages
       if (!isLoggedIn && !isOnLogin) {
         return false; // Redirect unauthenticated users to login page
       } else if (isLoggedIn && isOnLogin) {
-        return Response.redirect(new URL("/", nextUrl));
+        return Response.redirect(new URL('/', nextUrl));
       }
       return true;
     },

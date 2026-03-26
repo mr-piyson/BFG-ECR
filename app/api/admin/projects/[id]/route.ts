@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
-import { adminGuard } from "@/lib/admin-guard";
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
+import { adminGuard } from '@/lib/admin-guard';
 
 export async function PUT(request: Request, { params }: { params: Promise<{ id: string }> }) {
   const guard = await adminGuard();
@@ -12,7 +12,7 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     const { code, name, description, isActive } = body;
 
     if (!code || !name) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
     const project = await prisma.project.update({
@@ -28,10 +28,10 @@ export async function PUT(request: Request, { params }: { params: Promise<{ id: 
     return NextResponse.json(project);
   } catch (error: any) {
     if (error.code === 'P2025') {
-       return NextResponse.json({ error: "Project not found" }, { status: 404 });
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 });
     }
-    console.error("[Admin Projects API]", error);
-    return NextResponse.json({ error: "Failed to update project" }, { status: 500 });
+    console.error('[Admin Projects API]', error);
+    return NextResponse.json({ error: 'Failed to update project' }, { status: 500 });
   }
 }
 
@@ -46,7 +46,7 @@ export async function DELETE(_request: Request, { params }: { params: Promise<{ 
     });
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("[Admin Projects API]", error);
-    return NextResponse.json({ error: "Failed to delete project" }, { status: 500 });
+    console.error('[Admin Projects API]', error);
+    return NextResponse.json({ error: 'Failed to delete project' }, { status: 500 });
   }
 }

@@ -1,52 +1,66 @@
-import { NextResponse } from "next/server";
-import sql from "@/lib/db";
-import type { ECRStatus, StageType } from "@/lib/types";
+import { NextResponse } from 'next/server';
+import sql from '@/lib/db';
+import type { ECRStatus, StageType } from '@/lib/types';
 
 // Determine what the next status should be after proceeding from a stage,
 // considering skip flags
-async function getNextStatus(ecrId: string, currentStage: StageType): Promise<{ status: ECRStatus; stage: StageType } | { status: "RELEASED"; stage: "QUALITY_FINAL_CHECK" }> {
+async function getNextStatus(
+  ecrId: string,
+  currentStage: StageType,
+): Promise<
+  { status: ECRStatus; stage: StageType } | { status: 'RELEASED'; stage: 'QUALITY_FINAL_CHECK' }
+> {
   const [dif] = await sql`
     SELECT is_skip_costing, is_skip_project_manager, is_skip_quality
     FROM design_initial_forms
     WHERE ecr_id = ${ecrId}
   `;
-  const skip = dif || { is_skip_costing: false, is_skip_project_manager: false, is_skip_quality: false };
+  const skip = dif || {
+    is_skip_costing: false,
+    is_skip_project_manager: false,
+    is_skip_quality: false,
+  };
 
-  if (currentStage === "DESIGN_ENGINEER_INITIAL") {
-    if (!skip.is_skip_costing) return { status: "PENDING_COSTING", stage: "COSTING" };
-    if (!skip.is_skip_project_manager) return { status: "PENDING_PROJECT_MANAGER", stage: "PROJECT_MANAGER" };
-    if (!skip.is_skip_quality) return { status: "PENDING_QUALITY_CHECK", stage: "QUALITY_FINAL_CHECK" };
-    return { status: "RELEASED", stage: "QUALITY_FINAL_CHECK" };
+  if (currentStage === 'DESIGN_ENGINEER_INITIAL') {
+    if (!skip.is_skip_costing) return { status: 'PENDING_COSTING', stage: 'COSTING' };
+    if (!skip.is_skip_project_manager)
+      return { status: 'PENDING_PROJECT_MANAGER', stage: 'PROJECT_MANAGER' };
+    if (!skip.is_skip_quality)
+      return { status: 'PENDING_QUALITY_CHECK', stage: 'QUALITY_FINAL_CHECK' };
+    return { status: 'RELEASED', stage: 'QUALITY_FINAL_CHECK' };
   }
-  if (currentStage === "COSTING") {
-    if (!skip.is_skip_project_manager) return { status: "PENDING_PROJECT_MANAGER", stage: "PROJECT_MANAGER" };
-    if (!skip.is_skip_quality) return { status: "PENDING_QUALITY_CHECK", stage: "QUALITY_FINAL_CHECK" };
-    return { status: "RELEASED", stage: "QUALITY_FINAL_CHECK" };
+  if (currentStage === 'COSTING') {
+    if (!skip.is_skip_project_manager)
+      return { status: 'PENDING_PROJECT_MANAGER', stage: 'PROJECT_MANAGER' };
+    if (!skip.is_skip_quality)
+      return { status: 'PENDING_QUALITY_CHECK', stage: 'QUALITY_FINAL_CHECK' };
+    return { status: 'RELEASED', stage: 'QUALITY_FINAL_CHECK' };
   }
-  if (currentStage === "PROJECT_MANAGER") {
-    return { status: "PENDING_DESIGN_MEETING", stage: "DESIGN_ENGINEER_MEETING" };
+  if (currentStage === 'PROJECT_MANAGER') {
+    return { status: 'PENDING_DESIGN_MEETING', stage: 'DESIGN_ENGINEER_MEETING' };
   }
-  if (currentStage === "DESIGN_ENGINEER_MEETING") {
-    if (!skip.is_skip_quality) return { status: "PENDING_QUALITY_CHECK", stage: "QUALITY_FINAL_CHECK" };
-    return { status: "RELEASED", stage: "QUALITY_FINAL_CHECK" };
+  if (currentStage === 'DESIGN_ENGINEER_MEETING') {
+    if (!skip.is_skip_quality)
+      return { status: 'PENDING_QUALITY_CHECK', stage: 'QUALITY_FINAL_CHECK' };
+    return { status: 'RELEASED', stage: 'QUALITY_FINAL_CHECK' };
   }
-  if (currentStage === "QUALITY_FINAL_CHECK") {
-    return { status: "RELEASED", stage: "QUALITY_FINAL_CHECK" };
+  if (currentStage === 'QUALITY_FINAL_CHECK') {
+    return { status: 'RELEASED', stage: 'QUALITY_FINAL_CHECK' };
   }
-  return { status: "RELEASED", stage: "QUALITY_FINAL_CHECK" };
+  return { status: 'RELEASED', stage: 'QUALITY_FINAL_CHECK' };
 }
 
 function getReturnedStatus(targetStage: StageType): ECRStatus {
   const map: Record<StageType, ECRStatus> = {
-    DESIGN_ENGINEER_INITIAL: "RETURNED_TO_DESIGN",
-    COSTING: "RETURNED_TO_COSTING",
-    PROJECT_MANAGER: "RETURNED_TO_PROJECT_MANAGER",
+    DESIGN_ENGINEER_INITIAL: 'RETURNED_TO_DESIGN',
+    COSTING: 'RETURNED_TO_COSTING',
+    PROJECT_MANAGER: 'RETURNED_TO_PROJECT_MANAGER',
     // There is no dedicated "returned" status for the meeting/quality stages,
     // so send the ECR back into the pending status for the target stage.
-    DESIGN_ENGINEER_MEETING: "PENDING_DESIGN_MEETING",
-    QUALITY_FINAL_CHECK: "PENDING_QUALITY_CHECK",
+    DESIGN_ENGINEER_MEETING: 'PENDING_DESIGN_MEETING',
+    QUALITY_FINAL_CHECK: 'PENDING_QUALITY_CHECK',
   };
-  return map[targetStage] || "RETURNED_TO_DESIGN";
+  return map[targetStage] || 'RETURNED_TO_DESIGN';
 }
 
 export async function POST(request: Request, { params }: { params: Promise<{ id: string }> }) {
@@ -57,13 +71,16 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
 
     // Get current ECR
     const [ecr] = await sql`SELECT * FROM ecrs WHERE id = ${id}`;
-    if (!ecr) return NextResponse.json({ error: "ECR not found" }, { status: 404 });
+    if (!ecr) return NextResponse.json({ error: 'ECR not found' }, { status: 404 });
 
     const fromStatus = ecr.status;
 
-    if (action === "submit_stage1") {
+    if (action === 'submit_stage1') {
       // Submit Stage 1 — move to next stage
-      const { status: nextStatus, stage: nextStage } = await getNextStatus(id, "DESIGN_ENGINEER_INITIAL");
+      const { status: nextStatus, stage: nextStage } = await getNextStatus(
+        id,
+        'DESIGN_ENGINEER_INITIAL',
+      );
 
       // Update design initial form
       if (formData) {
@@ -99,7 +116,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       }
 
       // Advance ECR
-      const releaseAt = nextStatus === "RELEASED" ? sql`NOW()` : sql`NULL`;
+      const releaseAt = nextStatus === 'RELEASED' ? sql`NOW()` : sql`NULL`;
       await sql`
         UPDATE ecrs SET
           status = ${nextStatus}::"ECRStatus",
@@ -112,7 +129,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       return NextResponse.json({ success: true, newStatus: nextStatus });
     }
 
-    if (action === "save_stage1") {
+    if (action === 'save_stage1') {
       // Save draft
       if (formData) {
         await sql`
@@ -132,7 +149,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       return NextResponse.json({ success: true });
     }
 
-    if (action === "process_costing") {
+    if (action === 'process_costing') {
       // Update costing form
       if (formData) {
         const existing = await sql`SELECT id FROM costing_forms WHERE ecr_id = ${id}`;
@@ -146,7 +163,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
               nrc_amount = ${formData.nrc_amount ? parseFloat(formData.nrc_amount) : null},
               has_rc_cost = ${formData.has_rc_cost || false},
               rc_amount = ${formData.rc_amount ? parseFloat(formData.rc_amount) : null},
-              currency = ${formData.currency || "EUR"},
+              currency = ${formData.currency || 'EUR'},
               cost_details = ${formData.cost_details || null},
               remark = ${remark || null},
               flow_status = 'PROCEED'::"ECRFlowStatus",
@@ -158,12 +175,12 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         } else {
           await sql`
             INSERT INTO costing_forms (ecr_id, costing_engineer_id, date_of_quote, has_nrc_cost, nrc_amount, has_rc_cost, rc_amount, currency, cost_details, remark, flow_status, processed_on, submitted_at)
-            VALUES (${id}, ${formData.costing_engineer_id || null}, ${formData.date_of_quote || null}, ${formData.has_nrc_cost || false}, ${formData.nrc_amount ? parseFloat(formData.nrc_amount) : null}, ${formData.has_rc_cost || false}, ${formData.rc_amount ? parseFloat(formData.rc_amount) : null}, ${formData.currency || "EUR"}, ${formData.cost_details || null}, ${remark || null}, 'PROCEED'::"ECRFlowStatus", NOW(), NOW())
+            VALUES (${id}, ${formData.costing_engineer_id || null}, ${formData.date_of_quote || null}, ${formData.has_nrc_cost || false}, ${formData.nrc_amount ? parseFloat(formData.nrc_amount) : null}, ${formData.has_rc_cost || false}, ${formData.rc_amount ? parseFloat(formData.rc_amount) : null}, ${formData.currency || 'EUR'}, ${formData.cost_details || null}, ${remark || null}, 'PROCEED'::"ECRFlowStatus", NOW(), NOW())
           `;
         }
       }
 
-      const { status: nextStatus, stage: nextStage } = await getNextStatus(id, "COSTING");
+      const { status: nextStatus, stage: nextStage } = await getNextStatus(id, 'COSTING');
       await sql`
         INSERT INTO stage_histories (ecr_id, stage, from_status, to_status, flow_status, acted_by_user_id, remark)
         VALUES (${id}, 'COSTING'::"StageType", ${fromStatus}::"ECRStatus", ${nextStatus}::"ECRStatus", 'PROCEED'::"ECRFlowStatus", ${userId}, ${remark || null})
@@ -176,7 +193,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       return NextResponse.json({ success: true, newStatus: nextStatus });
     }
 
-    if (action === "process_pm") {
+    if (action === 'process_pm') {
       if (formData) {
         const existing = await sql`SELECT id FROM project_manager_forms WHERE ecr_id = ${id}`;
         if (existing.length > 0) {
@@ -200,7 +217,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         }
       }
 
-      const { status: nextStatus, stage: nextStage } = await getNextStatus(id, "PROJECT_MANAGER");
+      const { status: nextStatus, stage: nextStage } = await getNextStatus(id, 'PROJECT_MANAGER');
       await sql`
         INSERT INTO stage_histories (ecr_id, stage, from_status, to_status, flow_status, acted_by_user_id, remark)
         VALUES (${id}, 'PROJECT_MANAGER'::"StageType", ${fromStatus}::"ECRStatus", ${nextStatus}::"ECRStatus", 'PROCEED'::"ECRFlowStatus", ${userId}, ${remark || null})
@@ -209,9 +226,9 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       return NextResponse.json({ success: true, newStatus: nextStatus });
     }
 
-    if (action === "process_meeting") {
+    if (action === 'process_meeting') {
       const isNotApplicable = !!formData?.is_not_applicable;
-      const meetingFlowStatus = isNotApplicable ? "NOT_APPLICABLE" : "PROCEED";
+      const meetingFlowStatus = isNotApplicable ? 'NOT_APPLICABLE' : 'PROCEED';
 
       if (formData) {
         const existing = await sql`SELECT id FROM design_meeting_forms WHERE ecr_id = ${id}`;
@@ -232,7 +249,8 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
           `;
           // Replace attendees
           if (formData.attendees) {
-            const [meetingForm] = await sql`SELECT id FROM design_meeting_forms WHERE ecr_id = ${id}`;
+            const [meetingForm] =
+              await sql`SELECT id FROM design_meeting_forms WHERE ecr_id = ${id}`;
             await sql`DELETE FROM meeting_attendees WHERE meeting_form_id = ${meetingForm.id}`;
             for (const att of formData.attendees) {
               await sql`
@@ -258,7 +276,10 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         }
       }
 
-      const { status: nextStatus, stage: nextStage } = await getNextStatus(id, "DESIGN_ENGINEER_MEETING");
+      const { status: nextStatus, stage: nextStage } = await getNextStatus(
+        id,
+        'DESIGN_ENGINEER_MEETING',
+      );
       await sql`
         INSERT INTO stage_histories (ecr_id, stage, from_status, to_status, flow_status, acted_by_user_id, remark)
         VALUES (${id}, 'DESIGN_ENGINEER_MEETING'::"StageType", ${fromStatus}::"ECRStatus", ${nextStatus}::"ECRStatus", ${meetingFlowStatus}::"ECRFlowStatus", ${userId}, ${remark || null})
@@ -271,7 +292,7 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       return NextResponse.json({ success: true, newStatus: nextStatus });
     }
 
-    if (action === "release_quality") {
+    if (action === 'release_quality') {
       if (formData) {
         const existing = await sql`SELECT id FROM quality_check_forms WHERE ecr_id = ${id}`;
         if (existing.length > 0) {
@@ -302,11 +323,11 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
         VALUES (${id}, 'QUALITY_FINAL_CHECK'::"StageType", ${fromStatus}::"ECRStatus", 'RELEASED'::"ECRStatus", 'PROCEED'::"ECRFlowStatus", ${userId}, ${remark || null})
       `;
       await sql`UPDATE ecrs SET status = 'RELEASED'::"ECRStatus", released_at = NOW(), updated_at = NOW() WHERE id = ${id}`;
-      return NextResponse.json({ success: true, newStatus: "RELEASED" });
+      return NextResponse.json({ success: true, newStatus: 'RELEASED' });
     }
 
-    if (action === "return") {
-      const targetStage: StageType = returnToStage || "DESIGN_ENGINEER_INITIAL";
+    if (action === 'return') {
+      const targetStage: StageType = returnToStage || 'DESIGN_ENGINEER_INITIAL';
       const returnedStatus = getReturnedStatus(targetStage);
 
       await sql`
@@ -319,27 +340,27 @@ export async function POST(request: Request, { params }: { params: Promise<{ id:
       return NextResponse.json({ success: true, newStatus: returnedStatus });
     }
 
-    if (action === "hold") {
+    if (action === 'hold') {
       await sql`
         INSERT INTO stage_histories (ecr_id, stage, from_status, to_status, flow_status, acted_by_user_id, remark)
         VALUES (${id}, ${ecr.current_stage}::"StageType", ${fromStatus}::"ECRStatus", 'ON_HOLD'::"ECRStatus", 'PENDING'::"ECRFlowStatus", ${userId}, ${remark || null})
       `;
       await sql`UPDATE ecrs SET status = 'ON_HOLD'::"ECRStatus", updated_at = NOW() WHERE id = ${id}`;
-      return NextResponse.json({ success: true, newStatus: "ON_HOLD" });
+      return NextResponse.json({ success: true, newStatus: 'ON_HOLD' });
     }
 
-    if (action === "cancel") {
+    if (action === 'cancel') {
       await sql`
         INSERT INTO stage_histories (ecr_id, stage, from_status, to_status, flow_status, acted_by_user_id, remark)
         VALUES (${id}, ${ecr.current_stage}::"StageType", ${fromStatus}::"ECRStatus", 'CANCELLED'::"ECRStatus", 'PENDING'::"ECRFlowStatus", ${userId}, ${remark || null})
       `;
       await sql`UPDATE ecrs SET status = 'CANCELLED'::"ECRStatus", updated_at = NOW() WHERE id = ${id}`;
-      return NextResponse.json({ success: true, newStatus: "CANCELLED" });
+      return NextResponse.json({ success: true, newStatus: 'CANCELLED' });
     }
 
-    return NextResponse.json({ error: "Unknown action" }, { status: 400 });
+    return NextResponse.json({ error: 'Unknown action' }, { status: 400 });
   } catch (error) {
-    console.error("[ECR Stage Action]", error);
-    return NextResponse.json({ error: "Failed to process action" }, { status: 500 });
+    console.error('[ECR Stage Action]', error);
+    return NextResponse.json({ error: 'Failed to process action' }, { status: 500 });
   }
 }
