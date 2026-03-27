@@ -44,16 +44,23 @@ export default async function ECRDetailPage({ params }: { params: Promise<{ id: 
     }),
   ]);
 
+  // Serialize results for Client Component (Decimal conversion)
+  const serializableCostingForm = costingForm ? {
+    ...costingForm,
+    nrcAmount: costingForm.nrcAmount ? Number(costingForm.nrcAmount) : null,
+    rcAmount: costingForm.rcAmount ? Number(costingForm.rcAmount) : null,
+  } : null;
+
   return (
     <ECRDetailView
-      ecr={ecr}
-      designInitialForm={designInitialForm}
-      costingForm={costingForm}
-      pmForm={pmForm}
-      meetingForm={meetingForm}
-      qualityForm={qualityForm}
-      stageHistories={stageHistories}
-      attachments={attachments}
+      ecr={JSON.parse(JSON.stringify(ecr))}
+      designInitialForm={JSON.parse(JSON.stringify(designInitialForm))}
+      costingForm={serializableCostingForm}
+      pmForm={JSON.parse(JSON.stringify(pmForm))}
+      meetingForm={JSON.parse(JSON.stringify(meetingForm))}
+      qualityForm={JSON.parse(JSON.stringify(qualityForm))}
+      stageHistories={JSON.parse(JSON.stringify(stageHistories))}
+      attachments={JSON.parse(JSON.stringify(attachments))}
     />
   );
 }

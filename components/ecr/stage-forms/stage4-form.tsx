@@ -26,7 +26,7 @@ interface Stage4FormProps {
 
 export function Stage4Form({ ecr, userId, form, onUpdate }: Stage4FormProps) {
   const isActive =
-    ecr.current_stage === 'DESIGN_ENGINEER_MEETING' &&
+    ecr.currentStage === 'DESIGN_ENGINEER_MEETING' &&
     ['PENDING_DESIGN_MEETING', 'UNDER_DESIGN_MEETING'].includes(ecr.status);
   const isCompleted = form?.flow_status === 'PROCEED';
   const [showReturn, setShowReturn] = useState(false);
@@ -77,7 +77,7 @@ export function Stage4Form({ ecr, userId, form, onUpdate }: Stage4FormProps) {
           remark,
         }),
       });
-      if (!res.ok) toast.error();
+      if (!res.ok) toast.error('Failed to process meeting stage');
       toast.success('Meeting stage processed — ECR advanced');
       onUpdate();
     } catch {
@@ -185,7 +185,7 @@ export function Stage4Form({ ecr, userId, form, onUpdate }: Stage4FormProps) {
                     className="flex items-center gap-2 bg-muted/30 px-3 py-2 rounded border border-border"
                   >
                     <div
-                      className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${att.is_external ? 'bg-orange-400' : 'bg-blue-400'}`}
+                      className={`w-1.5 h-1.5 rounded-full shrink-0 ${att.is_external ? 'bg-orange-400' : 'bg-blue-400'}`}
                     />
                     <span className="text-sm text-foreground flex-1">{att.name}</span>
                     {att.email && (
@@ -237,7 +237,7 @@ export function Stage4Form({ ecr, userId, form, onUpdate }: Stage4FormProps) {
                 </label>
                 <button
                   onClick={addAttendee}
-                  className="flex-shrink-0 p-1.5 bg-primary text-primary-foreground rounded hover:opacity-90 transition-opacity"
+                  className="shrink-0 p-1.5 bg-primary text-primary-foreground rounded hover:opacity-90 transition-opacity"
                 >
                   <Plus className="w-3.5 h-3.5" />
                 </button>
