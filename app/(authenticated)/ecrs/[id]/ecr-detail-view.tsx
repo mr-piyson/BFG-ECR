@@ -146,8 +146,8 @@ export function ECRDetailView({
 
               <div className="relative">
                 <div className="flex items-center justify-between mb-12">
-                  <h3 className="text-lg  font-bold mb-10 flex items-center gap-3">
-                    <div className="h-5 w-1 rounded-full shadow-[0_0_10px_var(--primary)]" />
+                  <h3 className="text-lg text-background font-bold mb-10 flex items-center gap-3">
+                    <div className="h-5 w-1 bg-accent rounded-full shadow-[0_0_10px_var(--primary)]" />
                     Workflow Progression
                   </h3>
                   <div className="px-4 py-1.5 bg-white/5 rounded-full border border-white/10">
@@ -164,7 +164,7 @@ export function ECRDetailView({
                   {/* Progress Line */}
                   <div
                     className="absolute top-12 left-0 h-1 bg-linear-to-r from-primary via-primary to-blue-400 transition-all duration-1000 ease-out shadow-[0_0_20px_rgba(var(--primary),0.6)]"
-                    style={{ width: `${stageProgress}%` }}
+                    style={{ width: `${stageProgress + 10}%` }}
                   />
 
                   <div className="relative flex justify-between items-start">
@@ -185,7 +185,7 @@ export function ECRDetailView({
                         >
                           <div
                             className={cn(
-                              'size-10 rounded-full flex items-center justify-center transition-all duration-500 border-4',
+                              'size-16 rounded-full flex items-center justify-center transition-all duration-500 border-4',
                               isPassed && !isSkipped
                                 ? 'bg-primary border-slate-950 text-white shadow-[0_0_15px_rgba(var(--primary),0.4)]'
                                 : isSkipped
@@ -340,90 +340,6 @@ export function ECRDetailView({
             )}
           </Card>
         </div>
-
-        {/* Right Column: Workflow Visualization */}
-        <div className="lg:col-span-8">
-          <Card className="p-8 h-full bg-slate-900 dark:bg-zinc-900 border-none shadow-2xl text-white overflow-hidden relative">
-            <div className="absolute top-0 right-0 p-8 opacity-5">
-              <CheckCircle2 className="size-64" />
-            </div>
-
-            <div className="relative">
-              <h3 className="text-lg font-bold mb-10 flex items-center gap-3">
-                <div className="h-5 w-1 bg-primary rounded-full shadow-[0_0_10px_var(--primary)]" />
-                Workflow Progression
-              </h3>
-
-              <div className="relative flex justify-between items-start pt-4 px-4">
-                {/* Connector Line */}
-                <div className="absolute top-8 left-0 w-full h-[2px] bg-white/10" />
-                <div
-                  className="absolute top-8 left-0 h-[2px] bg-primary transition-all duration-1000 ease-in-out shadow-[0_0_15px_rgba(255,255,255,0.5)]"
-                  style={{ width: `${Math.min(stageProgress, 100)}%` }}
-                />
-
-                {STAGE_ORDER.map((stage, index) => {
-                  const isActive = ecr.currentStage === stage;
-                  const isPassed =
-                    index < STAGE_ORDER.indexOf(ecr.currentStage as StageType) ||
-                    ecr.status === 'RELEASED';
-                  const isSkipped =
-                    (stage === 'COSTING' && designInitialForm?.isSkipCosting) ||
-                    (stage === 'PROJECT_MANAGER' && designInitialForm?.isSkipProjectManager) ||
-                    (stage === 'DESIGN_ENGINEER_MEETING' && designInitialForm?.isSkipMeeting) ||
-                    (stage === 'QUALITY_FINAL_CHECK' && designInitialForm?.isSkipQuality);
-
-                  return (
-                    <div key={stage} className="flex flex-col items-center flex-1 z-10">
-                      <div
-                        className={cn(
-                          'size-16 rounded-full flex items-center justify-center transition-all duration-500 border-4',
-                          isPassed && !isSkipped
-                            ? 'bg-green-500 border-green-400/50 shadow-lg shadow-green-500/20'
-                            : isSkipped
-                              ? 'bg-zinc-700 border-zinc-600 text-zinc-400'
-                              : isActive
-                                ? 'bg-primary border-primary/20 shadow-lg shadow-primary/30 scale-110'
-                                : 'bg-zinc-800 border-zinc-700 text-zinc-500',
-                        )}
-                      >
-                        {isSkipped ? (
-                          <AlertCircle className="size-6 opacity-30" />
-                        ) : isPassed ? (
-                          <CheckCircle2 className="size-6 text-white" />
-                        ) : (
-                          <span className="text-lg font-black">{index + 1}</span>
-                        )}
-                      </div>
-                      <div className="mt-5 text-center px-1">
-                        <p
-                          className={cn(
-                            'text-[10px] font-black uppercase tracking-widest leading-tight transition-colors',
-                            isActive ? 'text-primary' : 'text-zinc-400',
-                          )}
-                        >
-                          {STAGE_SHORT_LABELS[stage]}
-                        </p>
-                        <div className="mt-1 h-3 flex items-center justify-center">
-                          {isActive && (
-                            <span className="text-[9px] font-bold text-primary animate-pulse tracking-tight">
-                              IN PROGRESS
-                            </span>
-                          )}
-                          {isSkipped && (
-                            <span className="text-[9px] font-bold text-zinc-500 italic">
-                              SKIPPED
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          </Card>
-        </div>
       </div>
 
       {/* Tabs Section for Forms and History */}
@@ -433,41 +349,41 @@ export function ECRDetailView({
         value={activeTab}
         onValueChange={setActiveTab}
       >
-        <div className="flex items-center justify-between border-b pb-1 overflow-x-auto">
+        <div className="flex items-center justify-between border-b  overflow-x-auto">
           <TabsList className="bg-transparent h-auto p-0 gap-8">
             <TabsTrigger
               value="history"
-              className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none pb-3 px-1 text-sm font-bold flex gap-2"
+              className="data-[state=active]:border-0  data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-primary rounded-none pb-3 px-1 text-sm font-bold flex gap-2"
             >
               <History className="size-4" /> Activity
             </TabsTrigger>
             <TabsTrigger
               value="design"
-              className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none pb-3 px-1 text-sm font-bold flex gap-2"
+              className="data-[state=active]:border-0 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-primary rounded-none pb-3 px-1 text-sm font-bold flex gap-2"
             >
               <FileText className="size-4" /> Design
             </TabsTrigger>
             <TabsTrigger
               value="costing"
-              className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none pb-3 px-1 text-sm font-bold flex gap-2"
+              className="data-[state=active]:border-0 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-primary rounded-none pb-3 px-1 text-sm font-bold flex gap-2"
             >
               <DollarSign className="size-4" /> Costing
             </TabsTrigger>
             <TabsTrigger
               value="pm"
-              className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none pb-3 px-1 text-sm font-bold flex gap-2"
+              className="data-[state=active]:border-0 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-primary rounded-none pb-3 px-1 text-sm font-bold flex gap-2"
             >
               <User className="size-4" /> PM Review
             </TabsTrigger>
             <TabsTrigger
               value="meeting"
-              className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none pb-3 px-1 text-sm font-bold flex gap-2"
+              className="data-[state=active]:border-0 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-primary rounded-none pb-3 px-1 text-sm font-bold flex gap-2"
             >
               <Users className="size-4" /> Meeting
             </TabsTrigger>
             <TabsTrigger
               value="quality"
-              className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none pb-3 px-1 text-sm font-bold flex gap-2"
+              className="data-[state=active]:border-0 data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:border-b-4 data-[state=active]:border-primary rounded-none pb-3 px-1 text-sm font-bold flex gap-2"
             >
               <CheckCircle2 className="size-4" /> Quality
             </TabsTrigger>
