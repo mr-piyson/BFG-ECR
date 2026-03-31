@@ -355,7 +355,7 @@ export default function NewECRPage() {
               required
               value={formData.change_description}
               onChange={(e) => setFormData({ ...formData, change_description: e.target.value })}
-              className="w-full flex min-h-[120px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+              className="w-full flex min-h-30 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
               placeholder="Provide a detailed explanation of the required changes and technical impacts..."
             />
           </div>

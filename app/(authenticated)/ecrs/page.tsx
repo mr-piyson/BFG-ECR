@@ -8,24 +8,14 @@ import { StatusBadge } from '@/components/status-badge';
 import Link from 'next/link';
 import { Search, Plus } from 'lucide-react';
 import { formatDate } from '@/lib/ecr-helpers';
-
-interface ECRRow {
-  id: string;
-  ecr_number: number;
-  project_code: string;
-  project_name: string;
-  current_stage: string;
-  status: string;
-  created_at: string;
-  change_description?: string;
-  scope_name?: string;
-}
+import { Ecr } from '@prisma/client';
 
 export default function ECRsPage() {
-  const [ecrs, setEcrs] = useState<ECRRow[]>([]);
+  const [ecrs, setEcrs] = useState<any>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
+  console.log(ecrs);
 
   useEffect(() => {
     const fetchEcrs = async () => {
@@ -47,7 +37,7 @@ export default function ECRsPage() {
     fetchEcrs();
   }, []);
 
-  const filteredEcrs = ecrs.filter((ecr) => {
+  const filteredEcrs = ecrs.filter((ecr: any) => {
     const matchesSearch =
       ecr.ecr_number?.toString().includes(search) ||
       ecr.project_code?.toLowerCase().includes(search.toLowerCase()) ||
@@ -119,9 +109,9 @@ export default function ECRsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {filteredEcrs.map((ecr) => (
+                {filteredEcrs.map((ecr: any) => (
                   <tr key={ecr.id} className="hover:bg-muted/50 transition-colors">
-                    <td className="px-6 py-4 font-medium">#{ecr.ecr_number}</td>
+                    <td className="px-6 py-4 font-medium">#{ecr.ecrNumber}</td>
                     <td className="px-6 py-4">{ecr.change_description || '—'}</td>
                     <td className="px-6 py-4 text-sm text-muted-foreground">{ecr.project_code}</td>
                     <td className="px-6 py-4 text-sm font-medium">{ecr.scope_name || '—'}</td>

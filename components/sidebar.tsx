@@ -1,6 +1,12 @@
 'use client';
 
-import { LayoutDashboard, ListTodo, Settings, Users } from 'lucide-react';
+import {
+  ChartColumnDecreasingIcon,
+  LayoutDashboard,
+  ListTodo,
+  Settings,
+  Users,
+} from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -11,6 +17,7 @@ const navItems = [
   { href: '/ecrs', label: 'ECRs', icon: ListTodo },
   { href: '/admin', label: 'Admin', icon: Users, role: 'ADMIN' },
   { href: '/settings', label: 'Settings', icon: Settings },
+  { href: '/wip', label: 'Work in Progress', icon: ChartColumnDecreasingIcon },
 ];
 
 export function Sidebar() {
